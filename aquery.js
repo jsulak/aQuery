@@ -22,19 +22,26 @@
 
 // The AQuery object inherits from the array object
 // TODO: Later, we may want to explicitly say which methods we want to keep
-var AQuery = function() {};
-AQuery.prototype = [];
+
+var aQueryCreator = function() {
+   // Define AQuery as an array so we get all the methods
+   var AQuery = [];
+
+   AQuery.remove = function() {
+      this.forEach(function(x) { x.remove(); });
+   };
+   AQuery.attr = function(name, value) {
+      this.forEach(function(x) { x.attr(name, value); });
+   };
+
+   return AQuery;
+};
+
 
 // Implement _element functions on the entire array
 // TODO: Fix this.  This is a total hack. Ideally,
 // there would be one implementation, that functioned
 // only on the array.
-AQuery.prototype.remove = function() {
-   this.forEach(function(x) { x.remove(); });
-};
-AQuery.prototype.attr = function(name, value) {
-   this.forEach(function(x) { x.attr(name, value); });
-};
 
 var _$ = function(document) {
 
@@ -51,7 +58,7 @@ var _$ = function(document) {
 
 	 // TODO: update to return all children if name is blank
 	 children : function(name) {
-	    var result = new AQuery;
+	    var result = aQueryCreator();
 	    for (var child = elem.firstChild; child != null; child = child.nextSibling) {
 	       if (child.nodeType == child.ELEMENT_NODE && child.getNodeName() == name) {
 		  result.push(_element(child));
@@ -82,7 +89,7 @@ var _$ = function(document) {
 				       term,
 				       Acl.func("current_doc"));
 	 var oids = oidNodesString.split("-");
-	 var result = new AQuery;
+	 var result = aQueryCreator();
 	 for (var i = 0; i < oids.length; i++ ) {
 	    result.push(_element(Acl.DOMOID(oids[i])));
 	 }
@@ -93,7 +100,7 @@ var _$ = function(document) {
       // provided name
       else {
 	 var nodes = document.getElementsByTagName(term);
-	 var result = new AQuery;
+	 var result = aQueryCreator();
 	 for (var i = 0; i < nodes.length; i++) {
 	    result.push(_element(nodes.item(i)));
 	 }
