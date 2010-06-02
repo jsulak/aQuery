@@ -25,6 +25,17 @@
 var AQuery = function() {};
 AQuery.prototype = [];
 
+// Implement _element functions on the entire array
+// TODO: Fix this.  This is a total hack. Ideally,
+// there would be one implementation, that functioned
+// only on the array.
+AQuery.prototype.remove = function() {
+   this.forEach(function(x) {
+		   x.remove();
+		});
+};
+
+
 var _$ = function(document) {
 
    var _element = function(elem) {
