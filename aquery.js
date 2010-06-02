@@ -127,6 +127,21 @@ var _$ = function(document) {
 	 }
       },
 
+      // TODO: Make this work on multiple elements
+      // TODO: Make this work when name is null
+      children : function(name) {
+	 var result = aQuery();
+	 var elem = this[0];
+	 for (var child = elem.firstChild; child != null; child = child.nextSibling) {
+	    if (child.nodeType == child.ELEMENT_NODE && child.getNodeName() == name) {
+	       result.push(child);
+	    }
+	 }
+	 result.context = this[0];
+	 result.selector = name;
+	 return result;
+      },
+
       // Start with an empty selector
       selector: "",
 
@@ -141,8 +156,6 @@ var _$ = function(document) {
       indexOf : Array.prototype.indexOf
    };
 
-   //aQuery.prototype.howdy = "aloha";
-
    // Give the init function the aQuery prototype for later instantiation
    aQuery.fn.init.prototype = aQuery.fn;
 
@@ -150,26 +163,3 @@ var _$ = function(document) {
 };
 
 
-// Implement _element functions on the entire array
-// TODO: Fix this.  This is a total hack. Ideally,
-// there would be one implementation, that functioned
-// only on the array.
-/*
-var _$ = function(document) {
-
-   var _element = function(elem) {
-      return {
-	 // TODO: update to return all children if name is blank
-	 children : function(name) {
-	    var result = aQueryCreator();
-	    for (var child = elem.firstChild; child != null; child = child.nextSibling) {
-	       if (child.nodeType == child.ELEMENT_NODE && child.getNodeName() == name) {
-		  result.push(child);
-	       }
-	    }
-	    return result;
-	 }
-      };
-   };
-
-*/
