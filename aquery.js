@@ -20,6 +20,11 @@
 //    $("#idname").elem.appendChild(newElement)
 
 
+// The AQuery object inherits from the array object
+// TODO: Later, we may want to explicitly say which methods we want to keep
+var AQuery = function() {};
+AQuery.prototype = [];
+
 var _$ = function(document) {
 
    var _element = function(elem) {
@@ -32,14 +37,21 @@ var _$ = function(document) {
 	       return elem.setAttribute(name, value);
 	    }
 	 },
+
+	 // TODO: update to return all children if name is blank
 	 children : function(name) {
-	    var result = [];
+	    var result = new AQuery;
 	    for (var child = elem.firstChild; child != null; child = child.nextSibling) {
 	       if (child.nodeType == child.ELEMENT_NODE && child.getNodeName() == name) {
 		  result.push(_element(child));
 	       }
 	    }
 	    return result;
+	 },
+
+	 remove : function() {
+	    var parent = elem.getParentNode();
+	    parent.removeChild(elem);
 	 }
       };
    };
@@ -59,9 +71,10 @@ var _$ = function(document) {
 				       term,
 				       Acl.func("current_doc"));
 	 var oids = oidNodesString.split("-");
-	 var result = oids.map(function(x) {
-				 return _element(Acl.DOMOID(x));
-			       });
+	 var result = new AQuery;
+	 for (var i = 0; i < oids.length; i++ ) {
+	    result.push(_element(Acl.DOMOID(oids[i])));
+	 }
 	 return result;
       }
 
@@ -69,7 +82,7 @@ var _$ = function(document) {
       // provided name
       else {
 	 var nodes = document.getElementsByTagName(term);
-	 var result = [];
+	 var result = new AQuery;
 	 for (var i = 0; i < nodes.length; i++) {
 	    result.push(_element(nodes.item(i)));
 	 }
