@@ -23,19 +23,30 @@
 // The AQuery object inherits from the array object
 // TODO: Later, we may want to explicitly say which methods we want to keep
 
-var aQueryCreator = function() {
+var aQueryCreator = function(document) {
    // Define AQuery as an array so we get all the methods
    var AQuery = {};
    AQuery.push = Array.prototype.push;
    AQuery.slice = Array.prototype.slice;
    AQuery.forEach = Array.prototype.forEach;
+   AQuery.map = Array.prototype.map;
    AQuery.indexOf = Array.prototype.indexOf;
 
    AQuery.remove = function() {
-      this.forEach(function(x) { x.remove(); });
+      this.forEach(function(elem) {
+		      var parent = elem.getParentNode();
+		      parent.removeChild(elem);
+		   });
    };
+
    AQuery.attr = function(name, value) {
-      this.forEach(function(x) { x.attr(name, value); });
+      if (value == null) {
+	 return this[0].getAttribute(name);
+      }
+      else {
+	 this.forEach(function(elem) { elem.setAttribute(name, value); });
+	 return this;
+      }
    };
 
    return AQuery;
@@ -51,29 +62,15 @@ var _$ = function(document) {
 
    var _element = function(elem) {
       return {
-	 elem : elem,
-	 attr : function(name, value) {
-	    if (value == null) {
-	       return elem.getAttribute(name);
-	    } else {
-	       return elem.setAttribute(name, value);
-	    }
-	 },
-
 	 // TODO: update to return all children if name is blank
 	 children : function(name) {
 	    var result = aQueryCreator();
 	    for (var child = elem.firstChild; child != null; child = child.nextSibling) {
 	       if (child.nodeType == child.ELEMENT_NODE && child.getNodeName() == name) {
-		  result.push(_element(child));
+		  result.push(child);
 	       }
 	    }
 	    return result;
-	 },
-
-	 remove : function() {
-	    var parent = elem.getParentNode();
-	    parent.removeChild(elem);
 	 }
       };
    };
@@ -82,7 +79,7 @@ var _$ = function(document) {
       // If it starts with "#", then we want to match ids
       if (term.match(/^#/)) {
 	 var id = term.substr(1);
-	 return _element(document.getElementById(id));
+	 return document.getElementById(id);
       }
 
       // If it is a valid xpath expression, then do that
@@ -95,7 +92,7 @@ var _$ = function(document) {
 	 var oids = oidNodesString.split("-");
 	 var result = aQueryCreator();
 	 for (var i = 0; i < oids.length; i++ ) {
-	    result.push(_element(Acl.DOMOID(oids[i])));
+	    result.push(Acl.DOMOID(oids[i]));
 	 }
 	 return result;
       }
@@ -106,7 +103,7 @@ var _$ = function(document) {
 	 var nodes = document.getElementsByTagName(term);
 	 var result = aQueryCreator();
 	 for (var i = 0; i < nodes.length; i++) {
-	    result.push(_element(nodes.item(i)));
+	    result.push(nodes.item(i));
 	 }
 	 return result;
       }
