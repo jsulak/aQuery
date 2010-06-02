@@ -30,11 +30,11 @@ AQuery.prototype = [];
 // there would be one implementation, that functioned
 // only on the array.
 AQuery.prototype.remove = function() {
-   this.forEach(function(x) {
-		   x.remove();
-		});
+   this.forEach(function(x) { x.remove(); });
 };
-
+AQuery.prototype.attr = function(name, value) {
+   this.forEach(function(x) { x.attr(name, value); });
+};
 
 var _$ = function(document) {
 
