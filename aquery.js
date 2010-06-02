@@ -25,7 +25,11 @@
 
 var aQueryCreator = function() {
    // Define AQuery as an array so we get all the methods
-   var AQuery = [];
+   var AQuery = {};
+   AQuery.push = Array.prototype.push;
+   AQuery.slice = Array.prototype.slice;
+   AQuery.forEach = Array.prototype.forEach;
+   AQuery.indexOf = Array.prototype.indexOf;
 
    AQuery.remove = function() {
       this.forEach(function(x) { x.remove(); });
