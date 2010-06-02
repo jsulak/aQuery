@@ -29,18 +29,54 @@ var _$ = function(document) {
       return new aQuery.fn.init(selector, context);
    };
 
+   // ================================
+   // Private functions
+   // ================================
+
+   // Merges the second array into the first array
+   function merge( first, second ) {
+      var i = first.length, j = 0;
+
+      if (typeof second.length === "number") {
+	 for (var l = second.length; j < l; j++) {
+	    first[i++] = second[j];
+	 }
+      } else {
+	 while (second[j] !== undefined ) {
+	    first[i++] = second[j++];
+	 }
+      }
+      first.length = i;
+      return first;
+   }
+
+
    aQuery.fn = aQuery.prototype = {
 
       init : function(selector, context) {
+	 var elem;
+
 	 // Handle $(""), $(null), or $(undefined)
 	 if (!selector) {
 	    return this;
 	 }
 
-	 // If it starts with "#", then we want to match ids
+	 // Handle $(DOMElement)
+	 if (selector.nodeType) {
+	    this.context = this[0] = selector;
+	    this.length = 1;
+	    return this;
+	 }
+
+	 // Handle ID matching: $("#id")
 	 if (selector.match(/^#/)) {
 	    var id = selector.substr(1);
-	    return document.getElementById(id);
+	    elem = document.getElementById(id);
+	    this.length = 1;
+	    this[0] = elem;
+	    this.context = document;
+	    this.selector = selector;
+	    return this;
 	 }
 
 	 // If it is a valid xpath expression, then do that
@@ -59,14 +95,18 @@ var _$ = function(document) {
 	 }
 
 	 // Otherwise return all elements in document with the
-	 // provided name
+	 // $("tagname")
 	 else {
+	    this.selector = selector;
+	    this.context = document;
 	    var nodes = document.getElementsByTagName(selector);
-	    var result = aQuery();
+	    selector = [];
 	    for (var i = 0; i < nodes.length; i++) {
-	       result.push(nodes.item(i));
+	       this.push(nodes.item(i));
 	    }
-	    return result;
+	    // TODO: Real jquery uses this merge.  Not sure why.
+	    //return merge(this, selector);
+	    return this;
 	 }
       },
 
@@ -86,6 +126,9 @@ var _$ = function(document) {
 	    return this;
 	 }
       },
+
+      // Start with an empty selector
+      selector: "",
 
 
       // Make array methods avaliable
