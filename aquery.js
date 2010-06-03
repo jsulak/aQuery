@@ -24,6 +24,7 @@
 // TODO: Later, we may want to explicitly say which methods we want to keep
 
 var _$ = function(document) {
+
    var aQuery = function(selector, context) {
       // The aQuery object is actually just the init constructor "enhanced."
       return new aQuery.fn.init(selector, context);
@@ -81,16 +82,18 @@ var _$ = function(document) {
 
 	 // If it is a valid xpath expression, then do that
 	 else if (selector.indexOf("/") != -1 && Acl.func("xpath_valid", selector)) {
-	    // TODO: later implement this more natively
-
+	    // TODO: Allow this to work with a context
+	    // Will probably have to check if it is a document or a node
 	    var oidNodesString = Acl.func("jmp_utils::get_doc_xpath_oids",
 					  selector,
-					  Acl.func("current_doc"));
+					  document.getAclId());
 	    var oids = oidNodesString.split("-");
 	    var result = aQuery();
-	    for (var i = 0; i < oids.length; i++ ) {
-	       result.push(Acl.DOMOID(oids[i]));
+	    for (var i = 0; i < oids.length; i++) {
+	       result.push(Acl.getDOMOID(oids[i]));
 	    }
+	    result.selector = selector;
+	    result.context = document;
 	    return result;
 	 }
 
@@ -145,7 +148,6 @@ var _$ = function(document) {
       // Start with an empty selector
       selector: "",
 
-
       // Make array methods avaliable
       // TODO: later do this in some more automated way
 
@@ -153,6 +155,7 @@ var _$ = function(document) {
       slice : Array.prototype.slice,
       forEach : Array.prototype.forEach,
       map : Array.prototype.map,
+      filter : Array.prototype.filter,
       indexOf : Array.prototype.indexOf
    };
 
