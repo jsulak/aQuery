@@ -51,6 +51,31 @@ var _$ = function(document) {
       return first;
    }
 
+   // Utility function for retreiving the text value of an array of DOM nodes
+   function getText( elems ) {
+      var ret = "", elem;
+
+      for (var i = 0; i < elems.length; i++) {
+	 // This silliness is because we have to handle
+	 // both aquery arrays and DOM nodelists, which don't use indexes
+	 if (elems.item != null) {
+	    elem = elems.item(i);
+	 } else {
+	    elem = elems[i];
+	 }
+
+	 // Get the text from text nodes and CDATA nodes
+	 if (elem.nodeType === 3 || elem.nodeType === 4) {
+	    ret += elem.nodeValue;
+	 // Traverse everything else, except comment nodes
+	 } else if (elem.nodeType !== 8) {
+	    ret += getText(elem.childNodes);
+	 }
+      }
+
+      return ret;
+   }
+
 
    aQuery.fn = aQuery.prototype = {
 
@@ -97,6 +122,14 @@ var _$ = function(document) {
 	    return result;
 	 }
 
+	 // Handle attribute selector
+	 //else if (selector.indexOf("[") > 0)
+	 //{
+	 //   this.selector = selector;
+	 //   this.context = document;
+	 //   var pair = selector.split("[|=");
+	 //}
+
 	 // Otherwise return all elements in document with the
 	 // $("tagname")
 	 else {
@@ -130,19 +163,48 @@ var _$ = function(document) {
 	 }
       },
 
-      // TODO: Make this work on multiple elements
-      // TODO: Make this work when name is null
       children : function(name) {
 	 var result = aQuery();
-	 var elem = this[0];
-	 for (var child = elem.firstChild; child != null; child = child.nextSibling) {
-	    if (child.nodeType == child.ELEMENT_NODE && child.getNodeName() == name) {
-	       result.push(child);
+	 for (var i = 0; i < this.length; i++) {
+	    var elem = this[i];
+	    for (var child = elem.firstChild; child != null; child = child.nextSibling) {
+	       if (child.nodeType == child.ELEMENT_NODE && (name == null || child.getNodeName() == name)) {
+		  result.push(child);
+	       }
 	    }
 	 }
 	 result.context = this[0];
 	 result.selector = name;
 	 return result;
+      },
+
+      parent : function(name) {
+	 var result = aQuery();
+	 for (var i = 0; i < this.length; i++) {
+	    var parent = this[i].parentNode;
+	    if (parent) {
+	       result.push(elem.getParentnode());
+	    }
+	 }
+	 result.context = this[0];
+	 result.selector = name;
+	 return result;
+      },
+
+      // Gets or sets the content of an element
+      text : function(text) {
+	 if (text != null && text != "") {
+	    for (var i = 0; i < this.length; i++) {
+	       var elem = this[i];
+	       for (var child = elem.firstChild; child != null; child = child.nextSibling) {
+		  elem.removeChild(child);
+	       }
+	       elem.appendChild(document.createTextNode(text));
+	    }
+	    return this;
+	 } else {
+	    return getText(this);
+	 }
       },
 
       // Start with an empty selector
@@ -155,8 +217,10 @@ var _$ = function(document) {
       slice : Array.prototype.slice,
       forEach : Array.prototype.forEach,
       map : Array.prototype.map,
+      reduce : Array.prototype.reduce,
       filter : Array.prototype.filter,
-      indexOf : Array.prototype.indexOf
+      indexOf : Array.prototype.indexOf,
+      join : Array.prototype.join
    };
 
    // Give the init function the aQuery prototype for later instantiation
