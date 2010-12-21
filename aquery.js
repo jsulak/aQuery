@@ -22,7 +22,7 @@
  * THE SOFTWARE.
 */
 
-// Instructions: 
+// Instructions:
 // To use it on the current document:
 //    var $ = _$(Application.activeDocument);
 //
@@ -132,7 +132,7 @@ var _$ = function(document) {
 	 else if (selector.indexOf("/") != -1 && Acl.func("xpath_valid", selector)) {
 	    // TODO: Allow this to work with a context
 	    // Will probably have to check if it is a document or a node
-	    var oidNodesString = Acl.func("jmp_utils::get_doc_xpath_oids",
+	    var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
 					  selector,
 					  document.getAclId());
 	    var oids = oidNodesString.split("-");

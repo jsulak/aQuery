@@ -1,0 +1,21 @@
+package aquery_utils;
+
+#This functions evaluates the XPath string and returns the oids as a string
+function get_xpath_oids(srcOid, xpath)
+{
+    
+  local array[]
+  oid_xpath_nodeset(srcOid, array, xpath)
+  return join(array, "-")
+}
+
+
+#This functions evaluates the XPath string and returns the oids as a string
+function get_doc_xpath_oids(xpath, doc)
+{
+   
+  local array[]
+  xpath_nodeset(array, xpath, doc)
+  return join(array, "-")
+  
+}
