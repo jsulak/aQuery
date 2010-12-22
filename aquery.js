@@ -57,24 +57,9 @@ var _$ = function(document) {
    // Private functions
    // ================================
 
-   // Merges the second array into the first array
-   function merge( first, second ) {
-      var i = first.length, j = 0;
-
-      if (typeof second.length === "number") {
-	 for (var l = second.length; j < l; j++) {
-	    first[i++] = second[j];
-	 }
-      } else {
-	 while (second[j] !== undefined ) {
-	    first[i++] = second[j++];
-	 }
-      }
-      first.length = i;
-      return first;
-   }
 
    // Utility function for retreiving the text value of an array of DOM nodes
+   // From Sizzle.getText()
    function getText( elems ) {
       var ret = "", elem;
 
@@ -145,27 +130,13 @@ var _$ = function(document) {
 	    return result;
 	 }
 
-	 // Handle attribute selector
-	 //else if (selector.indexOf("[") > 0)
-	 //{
-	 //   this.selector = selector;
-	 //   this.context = document;
-	 //   var pair = selector.split("[|=");
-	 //}
-
 	 // Otherwise return all elements in document with the
 	 // $("tagname")
 	 else {
 	    this.selector = selector;
 	    this.context = document;
-	    var nodes = document.getElementsByTagName(selector);
-	    selector = [];
-	    for (var i = 0; i < nodes.length; i++) {
-	       this.push(nodes.item(i));
-	    }
-	    // TODO: Real jquery uses this merge.  Not sure why.
-	    //return merge(this, selector);
-	    return this;
+	    selector = document.getElementsByTagName(selector);
+	    return aQuery.fn.merge(this, selector);
 	 }
       },
 
@@ -230,8 +201,39 @@ var _$ = function(document) {
 	 }
       },
 
+
+      merge: function( first, second ) {
+	 var i = first.length,
+	     j = 0;
+
+	 if ( typeof second.length === "number" ) {
+	    if (typeof second.item === "function") {
+	       for (var l = second.length; j < l; j++) {
+		  first[i++] = second.item(j);
+	       }
+
+	    } else {
+	       for (var l = second.length; j < l; j++) {
+		  first[i++] = second[j];
+	       }
+	    }
+
+	 } else {
+	    while (second[j] !== undefined) {
+	       first[i++] = second[j++];
+	    }
+	 }
+
+	 first.length = i;
+
+	 return first;
+      },
+
       // Start with an empty selector
       selector: "",
+
+      // The default length of an aQuery object is 0
+      length: 0,
 
       // Make array methods avaliable
       // TODO: later do this in some more automated way
