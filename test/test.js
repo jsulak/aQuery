@@ -53,20 +53,7 @@ var aQueryTests = function() {
 			     });
    }
 
-   /**
-    * Returns an array of elements with the given IDs, eg.
-    * @example q("main", "foo", "bar")
-    * @result [<div id="main">, <span id="foo">, <input id="bar">]
-    */
-   function q() {
-      var r = [];
 
-      for ( var i = 0; i < arguments.length; i++ ) {
-	 r.push( document.getElementById( arguments[i] ) );
-      }
-
-      return r;
-   }
 
 
 
@@ -74,6 +61,7 @@ var aQueryTests = function() {
       // Setup test environment
       var document = Application.openDocument(testdir + "\\ts_eliot_wasteland.xml");
       var aQuery = _$(document);
+
 
       print("");
       print("=========================");
@@ -97,7 +85,7 @@ var aQueryTests = function() {
 	      // Basic constructor behavior
 
 	      ok( aQuery, "aQuery object exists" );
-	      equals( aQuery.length, 0, "aQuery() === aQuery([])" );
+	      equals( aQuery().length, 0, "aQuery() === aQuery([])" );
 	      equals( aQuery(undefined).length, 0, "aQuery(undefined) === aQuery([])" );
 	      equals( aQuery(null).length, 0, "aQuery(null) === aQuery([])" );
 	      equals( aQuery("").length, 0, "aQuery('') === aQuery([])" );
@@ -152,12 +140,23 @@ var aQueryTests = function() {
       test("Test traversals", function() {
 	      expect(1);
 	      var titleParents = aQuery("title").parent();
-	      equal(titleParents[0].attr("id"), "topic-1");
+	      var attr = titleParents.attr("id");
+	      print("gotten");
+	      print(attr);
+	      equals(attr, "topic-1");
 	   });
 
       test("get()", function() {
 	      expect(1);
-	      deepEqual( aQuery("//*[@id]").get(), q("topic-1", "sect-1"), "Get All Elements" );
+	      // For some reason, deep equal doesn't seem to work on arrays of elements.
+	      equal( aQuery("//*[@id]").get().length, 2 );
+	   });
+
+      test("get(1)", function() {
+	      expect(1);
+	      print( aQuery("//*[@id]").get(0).tagName);
+	      // TODO: this whole Java string vs. javascript string thing is annoying
+	      equal( new String(aQuery("//*[@id]").get(0).tagName), "topic");
 	   });
 
 

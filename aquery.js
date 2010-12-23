@@ -20,7 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
-*/
+ */
 
 // Instructions:
 // To use it on the current document:
@@ -75,7 +75,7 @@ var _$ = function(document) {
 	 // Get the text from text nodes and CDATA nodes
 	 if (elem.nodeType === 3 || elem.nodeType === 4) {
 	    ret += elem.nodeValue;
-	 // Traverse everything else, except comment nodes
+	    // Traverse everything else, except comment nodes
 	 } else if (elem.nodeType !== 8) {
 	    ret += getText(elem.childNodes);
 	 }
@@ -102,42 +102,55 @@ var _$ = function(document) {
 	    return this;
 	 }
 
-	 // Handle ID matching: $("#id")
-	 if (selector.match(/^#/)) {
-	    var id = selector.substr(1);
-	    elem = document.getElementById(id);
-	    this.length = 1;
-	    this[0] = elem;
-	    this.context = document;
-	    this.selector = selector;
-	    return this;
-	 }
+	 // Handle strings
+	 if (typeof selector === "string") {
 
-	 // If it is a valid xpath expression, then do that
-	 else if (selector.indexOf("/") != -1 && Acl.func("xpath_valid", selector)) {
-	    // TODO: Allow this to work with a context
-	    // Will probably have to check if it is a document or a node
-	    var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
-					  selector,
-					  document.getAclId());
-	    var oids = oidNodesString.split("-");
-	    var result = aQuery();
-	    for (var i = 0; i < oids.length; i++) {
-	       result.push(Acl.getDOMOID(oids[i]));
+	    // Handle ID matching: $("#id")
+	    if (selector.match(/^#/)) {
+	       var id = selector.substr(1);
+	       elem = document.getElementById(id);
+	       this.length = 1;
+	       this[0] = elem;
+	       this.context = document;
+	       this.selector = selector;
+	       return this;
 	    }
-	    result.selector = selector;
-	    result.context = document;
-	    return result;
+
+	    // If it is a valid xpath expression, then do that
+	    else if (selector.indexOf("/") != -1 && Acl.func("xpath_valid", selector)) {
+	       // TODO: Allow this to work with a context
+	       // Will probably have to check if it is a document or a node
+	       var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
+					     selector,
+					     document.getAclId());
+	       var oids = oidNodesString.split("-");
+	       var result = aQuery();
+	       for (var i = 0; i < oids.length; i++) {
+		  result.push(Acl.getDOMOID(oids[i]));
+	       }
+	       result.selector = selector;
+	       result.context = document;
+	       return result;
+	    }
+
+	    // Otherwise return all elements in document with the
+	    // $("tagname")
+	    else {
+	       this.selector = selector;
+	       this.context = document;
+	       selector = document.getElementsByTagName(selector);
+	       return aQuery.fn.merge(this, selector);
+	    }
+
 	 }
 
-	 // Otherwise return all elements in document with the
-	 // $("tagname")
-	 else {
-	    this.selector = selector;
-	    this.context = document;
-	    selector = document.getElementsByTagName(selector);
-	    return aQuery.fn.merge(this, selector);
+	 if (selector.selector !== undefined) {
+	    this.selector = selector.selector;
+	    this.context = selector.context;
 	 }
+
+	 //return aQuery.makeArray(selector, this);
+
       },
 
       remove : function() {
@@ -149,7 +162,7 @@ var _$ = function(document) {
 
       attr : function(name, value) {
 	 if (value == null) {
-	    return this[0].getAttribute(name);
+	    return new String(this[0].getAttribute(name));
 	 }
 	 else {
 	    this.forEach(function(elem) { elem.setAttribute(name, value); });
@@ -175,12 +188,14 @@ var _$ = function(document) {
       parent : function(name) {
 	 var result = aQuery();
 	 for (var i = 0; i < this.length; i++) {
-	    var parent = this[i].parentNode;
+	    var parent = this[i].getParentNode();
 	    if (parent) {
-	       result.push(elem.getParentnode());
+	       result.push(parent);
 	    }
 	 }
-	 result.context = this[0];
+
+	 // TODO: Check to make sure this is right
+	 result.context = this;
 	 result.selector = name;
 	 return result;
       },
@@ -201,10 +216,23 @@ var _$ = function(document) {
 	 }
       },
 
+      get: function(num) {
+	return num == null ?
+
+	   // Return to a 'clean' array
+	   this.toArray() :
+
+	   // Return just the object
+	   (num < 0 ? this.slice(num)[0] : this[num]);
+      },
+
+      toArray: function() {
+	 return this.slice.call(this, 0);
+      },
 
       merge: function( first, second ) {
 	 var i = first.length,
-	     j = 0;
+	 j = 0;
 
 	 if ( typeof second.length === "number" ) {
 	    if (typeof second.item === "function") {
