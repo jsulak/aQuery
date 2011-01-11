@@ -43,15 +43,19 @@
 //    $("#idname").elem.appendChild(newElement)
 
 
-// The AQuery object inherits from the array object
-// TODO: Later, we may want to explicitly say which methods we want to keep
+// Source the aquery utils
+Acl.execute("source aquery_utils.acl");
+
 
 var _$ = function(document) {
 
    var aQuery = function(selector, context) {
       // The aQuery object is actually just the init constructor "enhanced."
       return new aQuery.fn.init(selector, context);
-   };
+   },
+
+      // [[Class]] -> type pairs
+      class2type = {};
 
    // ================================
    // Private functions
@@ -83,7 +87,6 @@ var _$ = function(document) {
 
       return ret;
    }
-
 
    aQuery.fn = aQuery.prototype = {
 
@@ -139,7 +142,7 @@ var _$ = function(document) {
 	       this.selector = selector;
 	       this.context = document;
 	       selector = document.getElementsByTagName(selector);
-	       return aQuery.fn.merge(this, selector);
+	       return aQuery.merge(this, selector);
 	    }
 
 	 }
@@ -149,7 +152,7 @@ var _$ = function(document) {
 	    this.context = selector.context;
 	 }
 
-	 //return aQuery.makeArray(selector, this);
+	 return aQuery.makeArray(selector, this);
 
       },
 
@@ -170,6 +173,7 @@ var _$ = function(document) {
 	 }
       },
 
+      // TODO: Right now, these only filter on name, instead of usual selectors
       children : function(name) {
 	 var result = aQuery();
 	 for (var i = 0; i < this.length; i++) {
@@ -199,6 +203,7 @@ var _$ = function(document) {
 	 result.selector = name;
 	 return result;
       },
+
 
       // Gets or sets the content of an element
       text : function(text) {
@@ -230,32 +235,23 @@ var _$ = function(document) {
 	 return this.slice.call(this, 0);
       },
 
-      merge: function( first, second ) {
-	 var i = first.length,
-	 j = 0;
+      bind: function(type, data, fn) {
 
-	 if ( typeof second.length === "number" ) {
-	    if (typeof second.item === "function") {
-	       for (var l = second.length; j < l; j++) {
-		  first[i++] = second.item(j);
-	       }
-
-	    } else {
-	       for (var l = second.length; j < l; j++) {
-		  first[i++] = second[j];
-	       }
-	    }
-
-	 } else {
-	    while (second[j] !== undefined) {
-	       first[i++] = second[j++];
-	    }
+	 if (aQuery.isFunction(data) || data === false) {
+	    fn = data;
+	    data = undefined;
 	 }
 
-	 first.length = i;
+	 for (var i = 0, l = this.length; i < l; i++) {
+	    var item = this[i];
+	    var o = { handleEvent: fn };
+	    var listener = Packages.org.w3c.dom.events.EventListener(o);
+	    item.addEventListener(type, listener, false);
+	 }
 
-	 return first;
       },
+
+
 
       // Start with an empty selector
       selector: "",
@@ -279,7 +275,119 @@ var _$ = function(document) {
    // Give the init function the aQuery prototype for later instantiation
    aQuery.fn.init.prototype = aQuery.fn;
 
+
+
+   // args is for internal usage only
+   aQuery.each = function( object, callback, args ) {
+      var name, i = 0,
+	 length = object.length,
+	 isObj = length === undefined || aQuery.isFunction(object);
+
+      if ( args ) {
+	 if ( isObj ) {
+	    for ( name in object ) {
+	       if ( callback.apply( object[ name ], args ) === false ) {
+		  break;
+	       }
+	    }
+	 } else {
+	    for ( ; i < length; ) {
+	       if ( callback.apply( object[ i++ ], args ) === false ) {
+		  break;
+	       }
+	    }
+	 }
+
+	 // A special, fast, case for the most common use of each
+      } else {
+	 if ( isObj ) {
+	    for ( name in object ) {
+	       if ( callback.call( object[ name ], name, object[ name ] ) === false ) {
+		  break;
+	       }
+	    }
+	 } else {
+	    for ( var value = object[0];
+		  i < length && callback.call( value, i, value ) !== false; value = object[++i] ) {}
+	 }
+      }
+
+      return object;
+   };
+
+   // results is for internal usage only
+   // TODO: Stubbed out "type" (and other stuff), need to put back in
+    aQuery.makeArray = function( array, results ) {
+	 var ret = results || [];
+
+	 if ( array != null ) {
+	    // The window, strings (and functions) also have 'length'
+
+	    var type = aQuery.type(array);
+
+	    if ( array.length == null || type === "string" || type === "function" || type === "regexp" ) {
+	       aQuery.fn.push.call( ret, array );
+	    } else {
+	      aQuery.merge( ret, array );
+	    }
+	 }
+
+	 return ret;
+    };
+
+
+    aQuery.merge = function ( first, second ) {
+       var i = first.length,
+       j = 0;
+
+       if ( typeof second.length === "number" ) {
+	  if (typeof second.item === "function") {
+	     for (var l = second.length; j < l; j++) {
+		first[i++] = second.item(j);
+	     }
+
+	  } else {
+	     for (var l = second.length; j < l; j++) {
+		first[i++] = second[j];
+	     }
+	  }
+
+       } else {
+	  while (second[j] !== undefined) {
+	     first[i++] = second[j++];
+	  }
+       }
+
+       first.length = i;
+
+       return first;
+    };
+
+
+    aQuery.type = function( obj ) {
+       return obj == null ?
+	  String( obj ) :
+	  class2type[ toString.call(obj) ] || "object";
+    };
+
+
+
+    aQuery.isFunction = function( obj ) {
+       // TODO: Set this up like jquery
+       return aQuery.type(obj) === "function";
+       //return toString.call(obj) === "[object Function]";
+    };
+
+   // Populate the class2type map
+    aQuery.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
+        class2type[ "[object " + name + "]" ] = name.toLowerCase();
+    });
+
+
    return aQuery;
 };
+
+
+
 
 

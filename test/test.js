@@ -4,6 +4,8 @@
 // See http://twoguysarguing.wordpress.com/2010/11/02/make-javascript-tests-part-of-your-build-qunit-rhino/
 // and http://twoguysarguing.wordpress.com/2010/11/26/qunit-cli-running-qunit-with-rhino/
 
+// To use, source the file, then run aQueryTests.Go({path to test data})
+
 
 var aQueryTests = function() {
 
@@ -121,7 +123,7 @@ var aQueryTests = function() {
 	      equals( test.context, document, "#topic-1 Context" );
 
 	      // Test cloning
-	      test = aQuery(document);
+	      test = aQuery("#topic-1");
 	      test = aQuery(test);
 	      equals( test.selector, "#topic-1", "#topic-1 Selector" );
 	      equals( test.context, document, "#topic-1 Context" );
@@ -159,6 +161,109 @@ var aQueryTests = function() {
 	      equal( new String(aQuery("//*[@id]").get(0).tagName), "topic");
 	   });
 
+
+      test("aQuery.makeArray", function() {
+	      expect(10);
+
+	      equals( aQuery.makeArray([1,2,3]).join(""), "123", "Pass makeArray a real array" );
+
+	      equals( aQuery.makeArray().length, 0, "Pass nothing to makeArray and expect an empty array" );
+
+	      equals( aQuery.makeArray( 0 )[0], 0 , "Pass makeArray a number" );
+
+	      equals( aQuery.makeArray( "foo" )[0], "foo", "Pass makeArray a string" );
+
+	      equals( aQuery.makeArray( true )[0].constructor, Boolean, "Pass makeArray a boolean" );
+
+	      equals( aQuery.makeArray( {length:2, 0:"a", 1:"b"} ).join(""), "ab", "Pass makeArray an array like map (with length)" );
+
+	      // function, is tricky as it has length
+	      equals( aQuery.makeArray( function(){ return 1;} )[0](), 1, "Pass makeArray a function" );
+
+	      equals( aQuery.makeArray(/a/)[0].constructor, RegExp, "Pass makeArray a regex" );
+
+	      // For #5610
+	      deepEqual( aQuery.makeArray({'length': '0'}), [], "Make sure object is coerced properly.");
+	      deepEqual( aQuery.makeArray({'length': '5'}), [], "Make sure object is coerced properly.");
+
+
+	      // TODO: Add actual DOM tests
+
+	   });
+
+
+      test("aQuery.each(Object, Function)", function() {
+	      expect(13);
+
+	      aQuery.each( [0,1,2], function(i, n){
+		 equals( i, n, "Check array iteration" );
+	      });
+
+	      aQuery.each( [5,6,7], function(i, n){
+		 equals( i, n - 5, "Check array iteration" );
+	      });
+
+	      aQuery.each( { name: "name", lang: "lang" }, function(i, n){
+		 equals( i, n, "Check object iteration" );
+	      });
+
+	      var total = 0;
+	      aQuery.each([1,2,3], function(i,v){ total += v; });
+	      equals( total, 6, "Looping over an array" );
+	      total = 0;
+	      aQuery.each([1,2,3], function(i,v){ total += v; if ( i == 1 ) return false; });
+	      equals( total, 3, "Looping over an array, with break" );
+	      total = 0;
+	      aQuery.each({"a":1,"b":2,"c":3}, function(i,v){ total += v; });
+	      equals( total, 6, "Looping over an object" );
+	      total = 0;
+	      aQuery.each({"a":3,"b":3,"c":3}, function(i,v){ total += v; return false; });
+	      equals( total, 3, "Looping over an object, with break" );
+
+	      var f = function(){};
+	      f.foo = 'bar';
+	      aQuery.each(f, function(i){
+			     f[i] = 'baz';
+			  });
+	      equals( "baz", f.foo, "Loop over a function" );
+	   });
+
+      test("isFunction", function() {
+	      expect(13);
+
+	      // Make sure that false values return false
+	      ok( !aQuery.isFunction(), "No Value" );
+	      ok( !aQuery.isFunction( null ), "null Value" );
+	      ok( !aQuery.isFunction( undefined ), "undefined Value" );
+	      ok( !aQuery.isFunction( "" ), "Empty String Value" );
+	      ok( !aQuery.isFunction( 0 ), "0 Value" );
+
+	      // Check built-ins
+	      // Safari uses "(Internal Function)"
+	      ok( aQuery.isFunction(String), "String Function("+String+")" );
+	      ok( aQuery.isFunction(Array), "Array Function("+Array+")" );
+	      ok( aQuery.isFunction(Object), "Object Function("+Object+")" );
+	      ok( aQuery.isFunction(Function), "Function Function("+Function+")" );
+
+	      // When stringified, this could be misinterpreted
+	      var mystr = "function";
+	      ok( !aQuery.isFunction(mystr), "Function String" );
+
+	      // When stringified, this could be misinterpreted
+	      var myarr = [ "function" ];
+	      ok( !aQuery.isFunction(myarr), "Function Array" );
+
+	      // When stringified, this could be misinterpreted
+	      var myfunction = { "function": "test" };
+	      ok( !aQuery.isFunction(myfunction), "Function Object" );
+
+	      // Make sure normal functions still work
+	      var fn = function(){};
+	      ok( aQuery.isFunction(fn), "Normal Function" );
+
+	      // TODO:  Add DOM tests
+
+	   });
 
       // Destroy test environment
       document.close();
