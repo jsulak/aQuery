@@ -54,8 +54,15 @@ var _$ = function(document) {
       return new aQuery.fn.init(selector, context);
    },
 
-      // [[Class]] -> type pairs
-      class2type = {};
+   // Save a reference to some core methods
+   hasOwn = Object.prototype.hasOwnProperty,
+
+   // [[Class]] -> type pairs
+   class2type = {},
+
+   // Used for trimming whitespace
+   trimLeft = /^\s+/,
+   trimRight = /\s+$/;
 
    // ================================
    // Private functions
@@ -315,73 +322,105 @@ var _$ = function(document) {
       return object;
    };
 
-   // results is for internal usage only
+   // Results is for internal usage only
    // TODO: Stubbed out "type" (and other stuff), need to put back in
-    aQuery.makeArray = function( array, results ) {
-	 var ret = results || [];
+   aQuery.makeArray = function( array, results ) {
+      var ret = results || [];
 
-	 if ( array != null ) {
-	    // The window, strings (and functions) also have 'length'
+      if ( array != null ) {
+	 // The window, strings (and functions) also have 'length'
 
-	    var type = aQuery.type(array);
+	 var type = aQuery.type(array);
 
-	    if ( array.length == null || type === "string" || type === "function" || type === "regexp" ) {
-	       aQuery.fn.push.call( ret, array );
-	    } else {
-	      aQuery.merge( ret, array );
+	 if ( array.length == null || type === "string" || type === "function" || type === "regexp" ) {
+	    aQuery.fn.push.call( ret, array );
+	 } else {
+	    aQuery.merge( ret, array );
+	 }
+      }
+
+      return ret;
+   };
+
+
+   aQuery.merge = function ( first, second ) {
+      var i = first.length,
+      j = 0;
+
+      if ( typeof second.length === "number" ) {
+	 if (typeof second.item === "function") {
+	    for (var l = second.length; j < l; j++) {
+	       first[i++] = second.item(j);
+	    }
+
+	 } else {
+	    for (var l = second.length; j < l; j++) {
+	       first[i++] = second[j];
 	    }
 	 }
 
-	 return ret;
-    };
+      } else {
+	 while (second[j] !== undefined) {
+	    first[i++] = second[j++];
+	 }
+      }
+
+      first.length = i;
+
+      return first;
+   };
 
 
-    aQuery.merge = function ( first, second ) {
-       var i = first.length,
-       j = 0;
-
-       if ( typeof second.length === "number" ) {
-	  if (typeof second.item === "function") {
-	     for (var l = second.length; j < l; j++) {
-		first[i++] = second.item(j);
-	     }
-
-	  } else {
-	     for (var l = second.length; j < l; j++) {
-		first[i++] = second[j];
-	     }
-	  }
-
-       } else {
-	  while (second[j] !== undefined) {
-	     first[i++] = second[j++];
-	  }
-       }
-
-       first.length = i;
-
-       return first;
-    };
+   aQuery.type = function( obj ) {
+      return obj == null ?
+	 String( obj ) :
+	 class2type[ toString.call(obj) ] || "object";
+   };
 
 
-    aQuery.type = function( obj ) {
-       return obj == null ?
-	  String( obj ) :
-	  class2type[ toString.call(obj) ] || "object";
-    };
+   aQuery.trim = function ( text ) {
+      return text == null ?
+ 	 "" :
+  	 text.toString().replace( trimLeft, "").replace( trimRight, "");
+   };
+
+   aQuery.isFunction = function( obj ) {
+      // TODO: Set this up like jquery
+      return aQuery.type(obj) === "function";
+      //return toString.call(obj) === "[object Function]";
+   };
+
+   aQuery.isPlainObject = function( obj ) {
+      // Must be an Object.
+      // Because of IE, we also have to check the presence of the constructor property.
+      // Make sure that DOM nodes and window objects don't pass through, as well
+      // xxx Removed isWindow test.
+      if ( !obj || aQuery.type(obj) !== "object" || obj.nodeType) {
+	 return false;
+      }
+
+      // Not own constructor property must be Object
+      if ( obj.constructor &&
+	   !hasOwn.call(obj, "constructor") &&
+	   !hasOwn.call(obj.constructor.prototype, "isPrototypeOf") ) {
+	 return false;
+      }
+
+      // Own properties are enumerated firstly, so to speed up,
+      // if last one is own, then all properties are own.
+
+      var key;
+      for ( key in obj ) {}
+
+      return key === undefined || hasOwn.call( obj, key );
+   };
 
 
-
-    aQuery.isFunction = function( obj ) {
-       // TODO: Set this up like jquery
-       return aQuery.type(obj) === "function";
-       //return toString.call(obj) === "[object Function]";
-    };
 
    // Populate the class2type map
-    aQuery.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
-        class2type[ "[object " + name + "]" ] = name.toLowerCase();
-    });
+   aQuery.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
+		  class2type[ "[object " + name + "]" ] = name.toLowerCase();
+	       });
 
 
    return aQuery;

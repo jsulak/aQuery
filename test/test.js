@@ -228,6 +228,85 @@ var aQueryTests = function() {
 	      equals( "baz", f.foo, "Loop over a function" );
 	   });
 
+
+      test("trim", function() {
+	      expect(9);
+
+	      var nbsp = String.fromCharCode(160);
+
+	      equals( aQuery.trim("hello  "), "hello", "trailing space" );
+	      equals( aQuery.trim("  hello"), "hello", "leading space" );
+	      equals( aQuery.trim("  hello   "), "hello", "space on both sides" );
+	      equals( aQuery.trim("  " + nbsp + "hello  " + nbsp + " "), "hello", "&nbsp;" );
+
+	      equals( aQuery.trim(), "", "Nothing in." );
+	      equals( aQuery.trim( undefined ), "", "Undefined" );
+	      equals( aQuery.trim( null ), "", "Null" );
+	      equals( aQuery.trim( 5 ), "5", "Number" );
+	      equals( aQuery.trim( false ), "false", "Boolean" );
+	   });
+
+
+      test("isPlainObject", function() {
+	      expect(14);
+
+	      stop();
+
+	      // The use case that we want to match
+	      ok(aQuery.isPlainObject({}), "{}");
+
+	      // Not objects shouldn't be matched
+	      ok(!aQuery.isPlainObject(""), "string");
+	      ok(!aQuery.isPlainObject(0) && !aQuery.isPlainObject(1), "number");
+	      ok(!aQuery.isPlainObject(true) && !aQuery.isPlainObject(false), "boolean");
+	      ok(!aQuery.isPlainObject(null), "null");
+	      ok(!aQuery.isPlainObject(undefined), "undefined");
+
+	      // Arrays shouldn't be matched
+	      ok(!aQuery.isPlainObject([]), "array");
+
+	      // Instantiated objects shouldn't be matched
+	      ok(!aQuery.isPlainObject(new Date), "new Date");
+
+	      var fn = function(){};
+
+	      // Functions shouldn't be matched
+	      ok(!aQuery.isPlainObject(fn), "fn");
+
+	      // Again, instantiated objects shouldn't be matched
+	      ok(!aQuery.isPlainObject(new fn), "new fn (no methods)");
+
+	      // Makes the function a little more realistic
+	      // (and harder to detect, incidentally)
+	      fn.prototype = {someMethod: function(){}};
+
+	      // Again, instantiated objects shouldn't be matched
+	      ok(!aQuery.isPlainObject(new fn), "new fn");
+
+	      // DOM Element
+	      ok(!aQuery.isPlainObject(document.createElement("div")), "DOM Element");
+
+	      // TODO: Enable these tests.
+	      // Window
+	      // ok(!aQuery.isPlainObject(window), "window");
+
+	      // var iframe = document.createElement("iframe");
+	      // document.body.appendChild(iframe);
+
+	      // window.iframeDone = function(otherObject){
+	      // 	 // Objects from other windows should be matched
+	      // 	 ok(aQuery.isPlainObject(new otherObject), "new otherObject");
+	      // 	 document.body.removeChild( iframe );
+	      // 	 start();
+	      // };
+
+	      // var doc = iframe.contentDocument || iframe.contentWindow.document;
+	      // doc.open();
+	      // doc.write("<body onload='window.parent.iframeDone(Object);'>");
+	      // doc.close();
+	   });
+
+
       test("isFunction", function() {
 	      expect(13);
 
