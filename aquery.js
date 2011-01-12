@@ -555,6 +555,45 @@ var _$ = function(document) {
       return key === undefined || hasOwn.call( obj, key );
    };
 
+   aQuery.isEmptyObject = function( obj ) {
+      for ( var name in obj ) {
+	 return false;
+      }
+      return true;
+   };
+
+
+   // A global GUID counter for objects
+   aQuery.guid = 1;
+
+   aQuery.proxy = function( fn, proxy, thisObject ) {
+      if ( arguments.length === 2 ) {
+	 if ( typeof proxy === "string" ) {
+	    thisObject = fn;
+	    fn = thisObject[ proxy ];
+	    proxy = undefined;
+
+	 } else if ( proxy && !aQuery.isFunction( proxy ) ) {
+	    thisObject = proxy;
+	    proxy = undefined;
+	 }
+      }
+
+      if ( !proxy && fn ) {
+	 proxy = function() {
+	    return fn.apply( thisObject || this, arguments );
+	 };
+      }
+
+      // Set the guid of unique handler to the same of original handler, so it can be removed
+      if ( fn ) {
+	 proxy.guid = fn.guid = fn.guid || proxy.guid || aQuery.guid++;
+      }
+
+      // So proxy can be declared as an argument
+      return proxy;
+   };
+
 
 
    // Populate the class2type map

@@ -520,6 +520,33 @@ var aQueryTests = function() {
 	   });
 
 
+      test("aQuery.isEmptyObject", function(){
+	      expect(2);
+
+	      equals(true, aQuery.isEmptyObject({}), "isEmptyObject on empty object literal" );
+	      equals(false, aQuery.isEmptyObject({a:1}), "isEmptyObject on non-empty object literal" );
+	   });
+
+
+      test("aQuery.proxy", function(){
+	      expect(4);
+
+	      var test = function(){ equals( this, thisObject, "Make sure that scope is set properly." ); };
+	      var thisObject = { foo: "bar", method: test };
+
+	      // Make sure normal works
+	      test.call( thisObject );
+
+	      // Basic scoping
+	      aQuery.proxy( test, thisObject )();
+
+	      // Make sure it doesn't freak out
+	      equals( aQuery.proxy( null, thisObject ), undefined, "Make sure no function was returned." );
+
+	      // Use the string shortcut
+	      aQuery.proxy( thisObject, "method" )();
+	   });
+
       // Destroy test environment
       document.close();
    }
