@@ -9,6 +9,7 @@
 
 var aQueryTests = function() {
 
+
    function Setup() {
 
       var ret;
@@ -63,7 +64,6 @@ var aQueryTests = function() {
       // Setup test environment
       var document = Application.openDocument(testdir + "\\ts_eliot_wasteland.xml");
       var aQuery = _$(document);
-
 
       print("");
       print("=========================");
@@ -180,7 +180,7 @@ var aQueryTests = function() {
 	      // function, is tricky as it has length
 	      equals( aQuery.makeArray( function(){ return 1;} )[0](), 1, "Pass makeArray a function" );
 
-	      equals( aQuery.makeArray(/a/)[0].constructor, RegExp, "Pass makeArray a regex" );
+	      equals( toString.call(aQuery.makeArray(/a/)[0]), "[object RegExp]", "Pass makeArray a regex" );
 
 	      // For #5610
 	      deepEqual( aQuery.makeArray({'length': '0'}), [], "Make sure object is coerced properly.");
@@ -250,7 +250,7 @@ var aQueryTests = function() {
       test("isPlainObject", function() {
 	      expect(14);
 
-	      stop();
+	      //stop();
 
 	      // The use case that we want to match
 	      ok(aQuery.isPlainObject({}), "{}");
@@ -343,6 +343,21 @@ var aQueryTests = function() {
 	      // TODO:  Add DOM tests
 
 	   });
+
+
+      test("slice()", function() {
+	      expect(5);
+
+	      var $data = aQuery("data");
+
+	      // Note: have to use .equals because of rhino/AOM weirdness that causes == not to work
+	      equals( $data.slice(1,2).attr("name"), 'etext-no.', "slice(1,1)" );
+	      ok( $data.slice(1,2).get()[0].equals(aQuery("//data[@name = 'etext-no.']")[0]), "slice(1,1)" );
+	      ok( $data.slice(-1).get()[0].equals(aQuery("//data[@name = 'copyright-status']")[0]), "slice(-1)" );
+	      equals($data.slice(-1).length, 1, "slice(-1)");
+	      equals($data.slice(1).length, 8, "slice(1)");
+	   });
+
 
       // Destroy test environment
       document.close();

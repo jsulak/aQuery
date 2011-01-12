@@ -56,6 +56,8 @@ var _$ = function(document) {
 
    // Save a reference to some core methods
    hasOwn = Object.prototype.hasOwnProperty,
+   push = Array.prototype.push,
+   slice = Array.prototype.slice,
 
    // [[Class]] -> type pairs
    class2type = {},
@@ -228,6 +230,12 @@ var _$ = function(document) {
 	 }
       },
 
+      toArray: function() {
+	 return slice.call(this, 0);
+      },
+
+      // Get the Nth element in the matched element set OR
+      // Get the whole matched element set as a clean array
       get: function(num) {
 	return num == null ?
 
@@ -238,8 +246,32 @@ var _$ = function(document) {
 	   (num < 0 ? this.slice(num)[0] : this[num]);
       },
 
-      toArray: function() {
-	 return this.slice.call(this, 0);
+      // Take an array of elements and push it onto the stack
+      // (returning the new matched element set)
+      pushStack: function( elems, name, selector ) {
+	 // Build a new aQuery matched element set
+	 var ret = aQuery();
+
+	 if ( aQuery.isArray( elems ) ) {
+	    push.apply( ret, elems );
+
+	 } else {
+	    aQuery.merge( ret, elems );
+	 }
+
+	 // Add the old object onto the stack (as a reference)
+	 ret.prevObject = this;
+
+	 ret.context = this.context;
+
+	 if ( name === "find" ) {
+	    ret.selector = this.selector + (this.selector ? " " : "") + selector;
+	 } else if ( name ) {
+	    ret.selector = this.selector + "." + name + "(" + selector + ")";
+	 }
+
+	 // Return the newly-formed element set
+	 return ret;
       },
 
       bind: function(type, data, fn) {
@@ -259,6 +291,12 @@ var _$ = function(document) {
       },
 
 
+      slice: function() {
+	 return this.pushStack(slice.apply(this, arguments),
+			       "slice", slice.call(arguments).join("," ));
+      },
+
+
 
       // Start with an empty selector
       selector: "",
@@ -270,7 +308,6 @@ var _$ = function(document) {
       // TODO: later do this in some more automated way
 
       push : Array.prototype.push,
-      slice : Array.prototype.slice,
       forEach : Array.prototype.forEach,
       map : Array.prototype.map,
       reduce : Array.prototype.reduce,
@@ -385,10 +422,13 @@ var _$ = function(document) {
    };
 
    aQuery.isFunction = function( obj ) {
-      // TODO: Set this up like jquery
       return aQuery.type(obj) === "function";
-      //return toString.call(obj) === "[object Function]";
    };
+
+   aQuery.isArray = function ( obj ) {
+      return aQuery.type(obj) === "array";
+   };
+
 
    aQuery.isPlainObject = function( obj ) {
       // Must be an Object.
