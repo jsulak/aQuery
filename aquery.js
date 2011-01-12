@@ -403,6 +403,8 @@ var _$ = function(document) {
 
 
    aQuery.extend({
+      // MISSING: Does it make any sense to have noConflict, ready, bindReady?
+
       isFunction: function( obj ) {
 	 return aQuery.type(obj) === "function";
       },
@@ -410,6 +412,8 @@ var _$ = function(document) {
       isArray:  function ( obj ) {
 	 return aQuery.type(obj) === "array";
       },
+
+      // MISSING: isNaN, isWindow (probably don't need)
 
       type: function( obj ) {
 	 return obj == null ?
@@ -448,6 +452,16 @@ var _$ = function(document) {
 	 }
 	 return true;
       },
+
+      error: function( msg ) {
+	 throw msg;
+      },
+
+      // MISSING: parseJSON needed?
+
+      noop: function() {},
+
+      // MISSING: globalEval, nodeName
 
       // args is for internal usage only
       each: function( object, callback, args ) {
@@ -513,6 +527,8 @@ var _$ = function(document) {
 	 return ret;
       },
 
+      // MISSING: inArray
+
       merge: function ( first, second ) {
 	 var i = first.length,
 	 j = 0;
@@ -539,6 +555,11 @@ var _$ = function(document) {
 
 	 return first;
       },
+
+
+      // MISSING: grep
+      // No tests in jQuery.  Remember to handle DOM equality differently.
+
 
       // arg is for internal usage only
       map: function( elems, callback, arg ) {
@@ -586,6 +607,12 @@ var _$ = function(document) {
 
 	 // So proxy can be declared as an argument
 	 return proxy;
+      },
+
+      // MISSING: access
+
+      now: function() {
+	 return (new Date()).getTime();
       }
 
    });
