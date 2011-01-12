@@ -359,6 +359,20 @@ var aQueryTests = function() {
 	   });
 
 
+      test("first()/last()", function() {
+	      expect(4);
+
+	      var $data = aQuery("data"), $none = aQuery("asdf");
+
+	      equals( $data.first().attr("name"), "project-gutenberg-metadata" , "first()" );
+	      same( $data.last().attr("name"), "copyright-status", "last()" );
+
+	      same( $none.first().get(), [], "first() none" );
+	      same( $none.last().get(), [], "last() none" );
+	   });
+
+
+
       // Destroy test environment
       document.close();
    }

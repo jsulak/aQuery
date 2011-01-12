@@ -290,6 +290,19 @@ var _$ = function(document) {
 
       },
 
+      eq: function( i ) {
+	 return i === -1 ?
+	    this.slice( i ) :
+	    this.slice( i, +i + 1 );
+      },
+
+      first: function() {
+	 return this.eq( 0 );
+      },
+
+      last: function() {
+	 return this.eq( -1 );
+      },
 
       slice: function() {
 	 return this.pushStack(slice.apply(this, arguments),
