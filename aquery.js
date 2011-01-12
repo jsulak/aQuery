@@ -402,198 +402,193 @@ var _$ = function(document) {
    };
 
 
+   aQuery.extend({
+      isFunction: function( obj ) {
+	 return aQuery.type(obj) === "function";
+      },
 
+      isArray:  function ( obj ) {
+	 return aQuery.type(obj) === "array";
+      },
 
-   // args is for internal usage only
-   aQuery.each = function( object, callback, args ) {
-      var name, i = 0,
+      type: function( obj ) {
+	 return obj == null ?
+	    String( obj ) :
+	    class2type[ toString.call(obj) ] || "object";
+      },
+
+      isPlainObject: function( obj ) {
+	 // Must be an Object.
+	 // Because of IE, we also have to check the presence of the constructor property.
+	 // Make sure that DOM nodes and window objects don't pass through, as well
+	 // xxx Removed isWindow test.
+	 if ( !obj || aQuery.type(obj) !== "object" || obj.nodeType) {
+	    return false;
+	 }
+
+	 // Not own constructor property must be Object
+	 if ( obj.constructor &&
+	      !hasOwn.call(obj, "constructor") &&
+	      !hasOwn.call(obj.constructor.prototype, "isPrototypeOf") ) {
+	    return false;
+	 }
+
+	 // Own properties are enumerated firstly, so to speed up,
+	 // if last one is own, then all properties are own.
+
+	 var key;
+	 for ( key in obj ) {}
+
+	 return key === undefined || hasOwn.call( obj, key );
+      },
+
+      isEmptyObject: function( obj ) {
+	 for ( var name in obj ) {
+	    return false;
+	 }
+	 return true;
+      },
+
+      // args is for internal usage only
+      each: function( object, callback, args ) {
+	 var name, i = 0,
 	 length = object.length,
 	 isObj = length === undefined || aQuery.isFunction(object);
 
-      if ( args ) {
-	 if ( isObj ) {
-	    for ( name in object ) {
-	       if ( callback.apply( object[ name ], args ) === false ) {
-		  break;
+	 if ( args ) {
+	    if ( isObj ) {
+	       for ( name in object ) {
+		  if ( callback.apply( object[ name ], args ) === false ) {
+		     break;
+		  }
+	       }
+	    } else {
+	       for ( ; i < length; ) {
+		  if ( callback.apply( object[ i++ ], args ) === false ) {
+		     break;
+		  }
 	       }
 	    }
+
+         // A special, fast, case for the most common use of each
 	 } else {
-	    for ( ; i < length; ) {
-	       if ( callback.apply( object[ i++ ], args ) === false ) {
-		  break;
+	    if ( isObj ) {
+	       for ( name in object ) {
+		  if ( callback.call( object[ name ], name, object[ name ] ) === false ) {
+		     break;
+		  }
+	       }
+	    } else {
+	       for ( var value = object[0];
+	       i < length && callback.call( value, i, value ) !== false; value = object[++i] ) {}
+	    }
+	 }
+
+	 return object;
+      },
+
+      trim: function ( text ) {
+	 return text == null ?
+	    "" :
+  	    text.toString().replace( trimLeft, "").replace( trimRight, "");
+      },
+
+      // Results is for internal usage only
+      // TODO: Stubbed out "type" (and other stuff), need to put back in
+      makeArray: function( array, results ) {
+	 var ret = results || [];
+
+	 if ( array != null ) {
+	    // The window, strings (and functions) also have 'length'
+
+	    var type = aQuery.type(array);
+
+	    if ( array.length == null || type === "string" || type === "function" || type === "regexp" ) {
+	       aQuery.fn.push.call( ret, array );
+	    } else {
+	       aQuery.merge( ret, array );
+	    }
+	 }
+
+	 return ret;
+      },
+
+      merge: function ( first, second ) {
+	 var i = first.length,
+	 j = 0;
+
+	 if ( typeof second.length === "number" ) {
+	    if (typeof second.item === "function") {
+	       for (var l = second.length; j < l; j++) {
+		  first[i++] = second.item(j);
+	       }
+
+	    } else {
+	       for (var l = second.length; j < l; j++) {
+		  first[i++] = second[j];
 	       }
 	    }
-	 }
-
-	 // A special, fast, case for the most common use of each
-      } else {
-	 if ( isObj ) {
-	    for ( name in object ) {
-	       if ( callback.call( object[ name ], name, object[ name ] ) === false ) {
-		  break;
-	       }
-	    }
-	 } else {
-	    for ( var value = object[0];
-		  i < length && callback.call( value, i, value ) !== false; value = object[++i] ) {}
-	 }
-      }
-
-      return object;
-   };
-
-   // Results is for internal usage only
-   // TODO: Stubbed out "type" (and other stuff), need to put back in
-   aQuery.makeArray = function( array, results ) {
-      var ret = results || [];
-
-      if ( array != null ) {
-	 // The window, strings (and functions) also have 'length'
-
-	 var type = aQuery.type(array);
-
-	 if ( array.length == null || type === "string" || type === "function" || type === "regexp" ) {
-	    aQuery.fn.push.call( ret, array );
-	 } else {
-	    aQuery.merge( ret, array );
-	 }
-      }
-
-      return ret;
-   };
-
-
-   aQuery.merge = function ( first, second ) {
-      var i = first.length,
-      j = 0;
-
-      if ( typeof second.length === "number" ) {
-	 if (typeof second.item === "function") {
-	    for (var l = second.length; j < l; j++) {
-	       first[i++] = second.item(j);
-	    }
 
 	 } else {
-	    for (var l = second.length; j < l; j++) {
-	       first[i++] = second[j];
+	    while (second[j] !== undefined) {
+	       first[i++] = second[j++];
 	    }
 	 }
 
-      } else {
-	 while (second[j] !== undefined) {
-	    first[i++] = second[j++];
+	 first.length = i;
+
+	 return first;
+      },
+
+      // arg is for internal usage only
+      map: function( elems, callback, arg ) {
+	 var ret = [], value;
+
+	 // Go through the array, translating each of the items to their
+	 // new value (or values).
+	 for ( var i = 0, length = elems.length; i < length; i++ ) {
+	    value = callback( elems[ i ], i, arg );
+
+	    if ( value != null ) {
+	       ret[ ret.length ] = value;
+	    }
 	 }
-      }
 
-      first.length = i;
+	 return ret.concat.apply( [], ret );
+      },
 
-      return first;
-   };
+      // A global GUID counter for objects
+      guid: 1,
 
-   // arg is for internal usage only
-   aQuery.map = function( elems, callback, arg ) {
-      var ret = [], value;
+      proxy: function( fn, proxy, thisObject ) {
+	 if ( arguments.length === 2 ) {
+	    if ( typeof proxy === "string" ) {
+	       thisObject = fn;
+	       fn = thisObject[ proxy ];
+	       proxy = undefined;
 
-      // Go through the array, translating each of the items to their
-      // new value (or values).
-      for ( var i = 0, length = elems.length; i < length; i++ ) {
-	 value = callback( elems[ i ], i, arg );
-
-	 if ( value != null ) {
-	    ret[ ret.length ] = value;
+	    } else if ( proxy && !aQuery.isFunction( proxy ) ) {
+	       thisObject = proxy;
+	       proxy = undefined;
+	    }
 	 }
-      }
 
-      return ret.concat.apply( [], ret );
-   };
-
-
-   aQuery.type = function( obj ) {
-      return obj == null ?
-	 String( obj ) :
-	 class2type[ toString.call(obj) ] || "object";
-   };
-
-
-   aQuery.trim = function ( text ) {
-      return text == null ?
- 	 "" :
-  	 text.toString().replace( trimLeft, "").replace( trimRight, "");
-   };
-
-   aQuery.isFunction = function( obj ) {
-      return aQuery.type(obj) === "function";
-   };
-
-   aQuery.isArray = function ( obj ) {
-      return aQuery.type(obj) === "array";
-   };
-
-
-   aQuery.isPlainObject = function( obj ) {
-      // Must be an Object.
-      // Because of IE, we also have to check the presence of the constructor property.
-      // Make sure that DOM nodes and window objects don't pass through, as well
-      // xxx Removed isWindow test.
-      if ( !obj || aQuery.type(obj) !== "object" || obj.nodeType) {
-	 return false;
-      }
-
-      // Not own constructor property must be Object
-      if ( obj.constructor &&
-	   !hasOwn.call(obj, "constructor") &&
-	   !hasOwn.call(obj.constructor.prototype, "isPrototypeOf") ) {
-	 return false;
-      }
-
-      // Own properties are enumerated firstly, so to speed up,
-      // if last one is own, then all properties are own.
-
-      var key;
-      for ( key in obj ) {}
-
-      return key === undefined || hasOwn.call( obj, key );
-   };
-
-   aQuery.isEmptyObject = function( obj ) {
-      for ( var name in obj ) {
-	 return false;
-      }
-      return true;
-   };
-
-
-   // A global GUID counter for objects
-   aQuery.guid = 1;
-
-   aQuery.proxy = function( fn, proxy, thisObject ) {
-      if ( arguments.length === 2 ) {
-	 if ( typeof proxy === "string" ) {
-	    thisObject = fn;
-	    fn = thisObject[ proxy ];
-	    proxy = undefined;
-
-	 } else if ( proxy && !aQuery.isFunction( proxy ) ) {
-	    thisObject = proxy;
-	    proxy = undefined;
+	 if ( !proxy && fn ) {
+	    proxy = function() {
+	       return fn.apply( thisObject || this, arguments );
+	    };
 	 }
+
+	 // Set the guid of unique handler to the same of original handler, so it can be removed
+	 if ( fn ) {
+	    proxy.guid = fn.guid = fn.guid || proxy.guid || aQuery.guid++;
+	 }
+
+	 // So proxy can be declared as an argument
+	 return proxy;
       }
 
-      if ( !proxy && fn ) {
-	 proxy = function() {
-	    return fn.apply( thisObject || this, arguments );
-	 };
-      }
-
-      // Set the guid of unique handler to the same of original handler, so it can be removed
-      if ( fn ) {
-	 proxy.guid = fn.guid = fn.guid || proxy.guid || aQuery.guid++;
-      }
-
-      // So proxy can be declared as an argument
-      return proxy;
-   };
-
+   });
 
 
    // Populate the class2type map
