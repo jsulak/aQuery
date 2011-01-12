@@ -165,8 +165,96 @@ var _$ = function(document) {
 
       },
 
+
+      // Start with an empty selector
+      selector: "",
+
+      // The default length of an aQuery object is 0
+      length: 0,
+
+      // The number of elements contained in the matched element set
+      size: function() {
+	 return this.length;
+      },
+
+      toArray: function() {
+	 return slice.call(this, 0);
+      },
+
+      // Get the Nth element in the matched element set OR
+      // Get the whole matched element set as a clean array
+      get: function(num) {
+	return num == null ?
+
+	   // Return to a 'clean' array
+	   this.toArray() :
+
+	   // Return just the object
+	   (num < 0 ? this.slice(num)[0] : this[num]);
+      },
+
+      // Take an array of elements and push it onto the stack
+      // (returning the new matched element set)
+      pushStack: function( elems, name, selector ) {
+	 // Build a new aQuery matched element set
+	 var ret = aQuery();
+
+	 if ( aQuery.isArray( elems ) ) {
+	    push.apply( ret, elems );
+
+	 } else {
+	    aQuery.merge( ret, elems );
+	 }
+
+	 // Add the old object onto the stack (as a reference)
+	 ret.prevObject = this;
+
+	 ret.context = this.context;
+
+	 if ( name === "find" ) {
+	    ret.selector = this.selector + (this.selector ? " " : "") + selector;
+	 } else if ( name ) {
+	    ret.selector = this.selector + "." + name + "(" + selector + ")";
+	 }
+
+	 // Return the newly-formed element set
+	 return ret;
+      },
+
+      // Execute a callback for every element in the matched set.
+      // (You can seed the arguments with an array of args, but this is
+      // only used internally.)
+      each: function( callback, args ) {
+	 return jQuery.each( this, callback, args );
+      },
+
+      eq: function( i ) {
+	 return i === -1 ?
+	    this.slice( i ) :
+	    this.slice( i, +i + 1 );
+      },
+
+      first: function() {
+	 return this.eq( 0 );
+      },
+
+      last: function() {
+	 return this.eq( -1 );
+      },
+
+      slice: function() {
+	 return this.pushStack(slice.apply(this, arguments),
+			       "slice", slice.call(arguments).join("," ));
+      },
+
+      map: function( callback ) {
+	 return this.pushStack( aQuery.map(this, function( elem, i ) {
+					      return callback.call( elem, i, elem );
+					   }));
+      },
+
       remove : function() {
-	 this.forEach(function(elem) {
+	    this.forEach(function(elem) {
 			 var parent = elem.getParentNode();
 			 parent.removeChild(elem);
 		      });
@@ -230,49 +318,6 @@ var _$ = function(document) {
 	 }
       },
 
-      toArray: function() {
-	 return slice.call(this, 0);
-      },
-
-      // Get the Nth element in the matched element set OR
-      // Get the whole matched element set as a clean array
-      get: function(num) {
-	return num == null ?
-
-	   // Return to a 'clean' array
-	   this.toArray() :
-
-	   // Return just the object
-	   (num < 0 ? this.slice(num)[0] : this[num]);
-      },
-
-      // Take an array of elements and push it onto the stack
-      // (returning the new matched element set)
-      pushStack: function( elems, name, selector ) {
-	 // Build a new aQuery matched element set
-	 var ret = aQuery();
-
-	 if ( aQuery.isArray( elems ) ) {
-	    push.apply( ret, elems );
-
-	 } else {
-	    aQuery.merge( ret, elems );
-	 }
-
-	 // Add the old object onto the stack (as a reference)
-	 ret.prevObject = this;
-
-	 ret.context = this.context;
-
-	 if ( name === "find" ) {
-	    ret.selector = this.selector + (this.selector ? " " : "") + selector;
-	 } else if ( name ) {
-	    ret.selector = this.selector + "." + name + "(" + selector + ")";
-	 }
-
-	 // Return the newly-formed element set
-	 return ret;
-      },
 
       bind: function(type, data, fn) {
 
@@ -289,38 +334,6 @@ var _$ = function(document) {
 	 }
 
       },
-
-      eq: function( i ) {
-	 return i === -1 ?
-	    this.slice( i ) :
-	    this.slice( i, +i + 1 );
-      },
-
-      first: function() {
-	 return this.eq( 0 );
-      },
-
-      last: function() {
-	 return this.eq( -1 );
-      },
-
-      slice: function() {
-	 return this.pushStack(slice.apply(this, arguments),
-			       "slice", slice.call(arguments).join("," ));
-      },
-
-      map: function( callback ) {
-	 return this.pushStack( aQuery.map(this, function( elem, i ) {
-					      return callback.call( elem, i, elem );
-					   }));
-      },
-
-
-      // Start with an empty selector
-      selector: "",
-
-      // The default length of an aQuery object is 0
-      length: 0,
 
       // Make array methods avaliable
       // TODO: these should probably be removed.
