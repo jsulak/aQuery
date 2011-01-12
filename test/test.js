@@ -162,73 +162,6 @@ var aQueryTests = function() {
 	   });
 
 
-      test("aQuery.makeArray", function() {
-	      expect(10);
-
-	      equals( aQuery.makeArray([1,2,3]).join(""), "123", "Pass makeArray a real array" );
-
-	      equals( aQuery.makeArray().length, 0, "Pass nothing to makeArray and expect an empty array" );
-
-	      equals( aQuery.makeArray( 0 )[0], 0 , "Pass makeArray a number" );
-
-	      equals( aQuery.makeArray( "foo" )[0], "foo", "Pass makeArray a string" );
-
-	      equals( aQuery.makeArray( true )[0].constructor, Boolean, "Pass makeArray a boolean" );
-
-	      equals( aQuery.makeArray( {length:2, 0:"a", 1:"b"} ).join(""), "ab", "Pass makeArray an array like map (with length)" );
-
-	      // function, is tricky as it has length
-	      equals( aQuery.makeArray( function(){ return 1;} )[0](), 1, "Pass makeArray a function" );
-
-	      equals( toString.call(aQuery.makeArray(/a/)[0]), "[object RegExp]", "Pass makeArray a regex" );
-
-	      // For #5610
-	      deepEqual( aQuery.makeArray({'length': '0'}), [], "Make sure object is coerced properly.");
-	      deepEqual( aQuery.makeArray({'length': '5'}), [], "Make sure object is coerced properly.");
-
-
-	      // TODO: Add actual DOM tests
-
-	   });
-
-
-      test("aQuery.each(Object, Function)", function() {
-	      expect(13);
-
-	      aQuery.each( [0,1,2], function(i, n){
-		 equals( i, n, "Check array iteration" );
-	      });
-
-	      aQuery.each( [5,6,7], function(i, n){
-		 equals( i, n - 5, "Check array iteration" );
-	      });
-
-	      aQuery.each( { name: "name", lang: "lang" }, function(i, n){
-		 equals( i, n, "Check object iteration" );
-	      });
-
-	      var total = 0;
-	      aQuery.each([1,2,3], function(i,v){ total += v; });
-	      equals( total, 6, "Looping over an array" );
-	      total = 0;
-	      aQuery.each([1,2,3], function(i,v){ total += v; if ( i == 1 ) return false; });
-	      equals( total, 3, "Looping over an array, with break" );
-	      total = 0;
-	      aQuery.each({"a":1,"b":2,"c":3}, function(i,v){ total += v; });
-	      equals( total, 6, "Looping over an object" );
-	      total = 0;
-	      aQuery.each({"a":3,"b":3,"c":3}, function(i,v){ total += v; return false; });
-	      equals( total, 3, "Looping over an object, with break" );
-
-	      var f = function(){};
-	      f.foo = 'bar';
-	      aQuery.each(f, function(i){
-			     f[i] = 'baz';
-			  });
-	      equals( "baz", f.foo, "Loop over a function" );
-	   });
-
-
       test("trim", function() {
 	      expect(9);
 
@@ -519,6 +452,72 @@ var aQueryTests = function() {
 	      same( options2, options2Copy, "Check if not modified: options2 must not be modified" );
 	   });
 
+
+      test("aQuery.each(Object, Function)", function() {
+	      expect(13);
+
+	      aQuery.each( [0,1,2], function(i, n){
+		 equals( i, n, "Check array iteration" );
+	      });
+
+	      aQuery.each( [5,6,7], function(i, n){
+		 equals( i, n - 5, "Check array iteration" );
+	      });
+
+	      aQuery.each( { name: "name", lang: "lang" }, function(i, n){
+		 equals( i, n, "Check object iteration" );
+	      });
+
+	      var total = 0;
+	      aQuery.each([1,2,3], function(i,v){ total += v; });
+	      equals( total, 6, "Looping over an array" );
+	      total = 0;
+	      aQuery.each([1,2,3], function(i,v){ total += v; if ( i == 1 ) return false; });
+	      equals( total, 3, "Looping over an array, with break" );
+	      total = 0;
+	      aQuery.each({"a":1,"b":2,"c":3}, function(i,v){ total += v; });
+	      equals( total, 6, "Looping over an object" );
+	      total = 0;
+	      aQuery.each({"a":3,"b":3,"c":3}, function(i,v){ total += v; return false; });
+	      equals( total, 3, "Looping over an object, with break" );
+
+	      var f = function(){};
+	      f.foo = 'bar';
+	      aQuery.each(f, function(i){
+			     f[i] = 'baz';
+			  });
+	      equals( "baz", f.foo, "Loop over a function" );
+	   });
+
+
+      test("aQuery.makeArray", function() {
+	      expect(10);
+
+	      equals( aQuery.makeArray([1,2,3]).join(""), "123", "Pass makeArray a real array" );
+
+	      equals( aQuery.makeArray().length, 0, "Pass nothing to makeArray and expect an empty array" );
+
+	      equals( aQuery.makeArray( 0 )[0], 0 , "Pass makeArray a number" );
+
+	      equals( aQuery.makeArray( "foo" )[0], "foo", "Pass makeArray a string" );
+
+	      equals( aQuery.makeArray( true )[0].constructor, Boolean, "Pass makeArray a boolean" );
+
+	      equals( aQuery.makeArray( {length:2, 0:"a", 1:"b"} ).join(""), "ab", "Pass makeArray an array like map (with length)" );
+
+	      // function, is tricky as it has length
+	      equals( aQuery.makeArray( function(){ return 1;} )[0](), 1, "Pass makeArray a function" );
+
+	      equals( toString.call(aQuery.makeArray(/a/)[0]), "[object RegExp]", "Pass makeArray a regex" );
+
+	      // For #5610
+	      deepEqual( aQuery.makeArray({'length': '0'}), [], "Make sure object is coerced properly.");
+	      deepEqual( aQuery.makeArray({'length': '5'}), [], "Make sure object is coerced properly.");
+
+
+	      // TODO: Add actual DOM tests
+
+	   });
 
 
       // Destroy test environment
