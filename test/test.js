@@ -372,6 +372,28 @@ var aQueryTests = function() {
 	   });
 
 
+      test("map()", function() {
+	      expect(2);
+
+	      same(
+		 aQuery("data").map(function(){
+				       return aQuery(this).attr("name");
+				   }).get(),
+		 ['project-gutenberg-metadata', 'etext-no.', 'release-date', 'loc-class', 'subject',
+		  'base-directory', 'language', 'creator', 'copyright-status'],
+		 "Array Map"
+	      );
+
+	      same(
+		 aQuery("data").first().map(function(){
+					       return aQuery(this).attr("name");
+				       }).get(),
+		 ["project-gutenberg-metadata"],
+		 "Single Map"
+	      );
+
+	   });
+
 
       // Destroy test environment
       document.close();

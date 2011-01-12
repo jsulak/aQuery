@@ -309,6 +309,11 @@ var _$ = function(document) {
 			       "slice", slice.call(arguments).join("," ));
       },
 
+      map: function( callback ) {
+	 return this.pushStack( aQuery.map(this, function( elem, i ) {
+					      return callback.call( elem, i, elem );
+					   }));
+      },
 
 
       // Start with an empty selector
@@ -318,11 +323,10 @@ var _$ = function(document) {
       length: 0,
 
       // Make array methods avaliable
-      // TODO: later do this in some more automated way
+      // TODO: these should probably be removed.
 
       push : Array.prototype.push,
       forEach : Array.prototype.forEach,
-      map : Array.prototype.map,
       reduce : Array.prototype.reduce,
       filter : Array.prototype.filter,
       indexOf : Array.prototype.indexOf,
@@ -418,6 +422,23 @@ var _$ = function(document) {
       first.length = i;
 
       return first;
+   };
+
+   // arg is for internal usage only
+   aQuery.map = function( elems, callback, arg ) {
+      var ret = [], value;
+
+      // Go through the array, translating each of the items to their
+      // new value (or values).
+      for ( var i = 0, length = elems.length; i < length; i++ ) {
+	 value = callback( elems[ i ], i, arg );
+
+	 if ( value != null ) {
+	    ret[ ret.length ] = value;
+	 }
+      }
+
+      return ret.concat.apply( [], ret );
    };
 
 
