@@ -394,6 +394,29 @@ var aQueryTests = function() {
 
 	   });
 
+      test("aQuery.merge()", function() {
+	      expect(8);
+
+	      var parse = aQuery.merge;
+
+	      same( parse([],[]), [], "Empty arrays" );
+
+	      same( parse([1],[2]), [1,2], "Basic" );
+	      same( parse([1,2],[3,4]), [1,2,3,4], "Basic" );
+
+	      same( parse([1,2],[]), [1,2], "Second empty" );
+	      same( parse([],[1,2]), [1,2], "First empty" );
+
+	      // Fixed at [5998], #3641
+	      same( parse([-2,-1], [0,1,2]), [-2,-1,0,1,2], "Second array including a zero (falsy)");
+
+	      // After fixing #5527
+	      same( parse([], [null, undefined]), [null, undefined], "Second array including null and undefined values");
+	      same( parse({length:0}, [1,2]), {length:2, 0:1, 1:2}, "First array like");
+	   });
+
+
+
 
       // Destroy test environment
       document.close();
