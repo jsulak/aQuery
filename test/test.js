@@ -148,19 +148,6 @@ var aQueryTests = function() {
 	      equals(attr, "topic-1");
 	   });
 
-      test("get()", function() {
-	      expect(1);
-	      // For some reason, deep equal doesn't seem to work on arrays of elements.
-	      equal( aQuery("//*[@id]").get().length, 2 );
-	   });
-
-      test("get(1)", function() {
-	      expect(1);
-	      print( aQuery("//*[@id]").get(0).tagName);
-	      // TODO: this whole Java string vs. javascript string thing is annoying
-	      equal( new String(aQuery("//*[@id]").get(0).tagName), "topic");
-	   });
-
 
       test("trim", function() {
 	      expect(9);
@@ -277,6 +264,62 @@ var aQueryTests = function() {
 
 	   });
 
+
+      // TODO: Implement these tests once more of the traversal methods are implemented
+      // test("end()", function() {
+      // 	      expect(3);
+      // 	      equals( 'Yahoo', aQuery('#yahoo').parent().end().text(), 'Check for end' );
+      // 	      ok( aQuery('#yahoo').end(), 'Check for end with nothing to end' );
+
+      // 	      var x = aQuery('#yahoo');
+      // 	      x.parent();
+      // 	      equals( 'Yahoo', aQuery('#yahoo').text(), 'Check for non-destructive behaviour' );
+      // 	   });
+
+      test("length", function() {
+	      expect(1);
+	      equals( aQuery("data").length, 9, "Get Number of Elements Found" );
+	   });
+
+      test("size()", function() {
+	      expect(1);
+	      equals( aQuery("data").size(), 9, "Get Number of Elements Found" );
+	   });
+
+      test("get()", function() {
+	      expect(1);
+	      // For some reason, deep equal doesn't seem to work on arrays of elements.
+	      equal( aQuery("//*[@id]").get().length, 2 );
+	   });
+
+      test("get(1)", function() {
+	      expect(1);
+	      // TODO: this whole Java string vs. javascript string thing is annoying
+	      equal( new String(aQuery("//*[@id]").get(0).tagName), "topic");
+	   });
+
+      test("get(-1)", function() {
+	      expect(1);
+	      equal(new String(aQuery("data").get(-1).getAttribute("name")), "copyright-status");
+	   });
+      //equals( toString.call(aQuery.makeArray(/a/)[0]), "[object RegExp]", "Pass makeArray a regex" );
+      test("toArray()", function() {
+	      expect(2);
+	      var a = aQuery("data").toArray();
+	      equal ( toString.call(a), "[object Array]", "Convert Query object to array");
+	      equal ( a.length, 9, "Convert Query object to array");
+	   });
+
+      test("each(Function)", function() {
+	      expect(1);
+	      var data = aQuery("data");
+	      data.each(function(){aQuery(this).attr("foo", "zoo");});
+	      var pass = true;
+	      for ( var i = 0; i < data.size(); i++ ) {
+		 if ( aQuery(data.get(i)).attr("foo") != "zoo" ) pass = false;
+	      }
+	      ok( pass, "Exectue a function, Relative" );
+	   });
 
       test("slice()", function() {
 	      expect(5);

@@ -49,6 +49,9 @@ Acl.execute("source aquery_utils.acl");
 
 var _$ = function(document) {
 
+   // If no document is passed in, then use the active document
+   document = document || Application.activeDocument;
+
    var aQuery = function(selector, context) {
       // The aQuery object is actually just the init constructor "enhanced."
       return new aQuery.fn.init(selector, context);
@@ -225,7 +228,7 @@ var _$ = function(document) {
       // (You can seed the arguments with an array of args, but this is
       // only used internally.)
       each: function( callback, args ) {
-	 return jQuery.each( this, callback, args );
+	 return aQuery.each( this, callback, args );
       },
 
       eq: function( i ) {
@@ -251,6 +254,10 @@ var _$ = function(document) {
 	 return this.pushStack( aQuery.map(this, function( elem, i ) {
 					      return callback.call( elem, i, elem );
 					   }));
+      },
+
+      end: function() {
+	 return this.prevObject || jQuery(null);
       },
 
       remove : function() {
@@ -417,6 +424,8 @@ var _$ = function(document) {
 
    aQuery.extend({
       // MISSING: Does it make any sense to have noConflict, ready, bindReady?
+
+      // TODO:  Add equals() method of some sort to handle issue with DOM node equality.
 
       isFunction: function( obj ) {
 	 return aQuery.type(obj) === "function";
