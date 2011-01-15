@@ -139,12 +139,18 @@ var _$ = function(document) {
 					     selector,
 					     document.getAclId());
 	       var oids = oidNodesString.split("-");
+
 	       var result = aQuery();
+	       result.selector = selector;
+	       result.context = document;
+
+	       if (oids[0] == "" && oids.length == 1) {
+		  return result;
+	       }
+
 	       for (var i = 0; i < oids.length; i++) {
 		  result.push(Acl.getDOMOID(oids[i]));
 	       }
-	       result.selector = selector;
-	       result.context = document;
 	       return result;
 	    }
 
@@ -264,54 +270,12 @@ var _$ = function(document) {
       sort: [].sort,
       splice: [].splice,
 
-      remove : function() {
+      remove: function() {
 	    this.forEach(function(elem) {
 			 var parent = elem.getParentNode();
 			 parent.removeChild(elem);
 		      });
       },
-
-      attr : function(name, value) {
-	 if (value == null) {
-	    return new String(this[0].getAttribute(name));
-	 }
-	 else {
-	    this.forEach(function(elem) { elem.setAttribute(name, value); });
-	    return this;
-	 }
-      },
-
-      // // TODO: Right now, these only filter on name, instead of usual selectors
-      // children : function(name) {
-      // 	 var result = aQuery();
-      // 	 for (var i = 0; i < this.length; i++) {
-      // 	    var elem = this[i];
-      // 	    for (var child = elem.firstChild; child != null; child = child.nextSibling) {
-      // 	       if (child.nodeType == child.ELEMENT_NODE && (name == null || child.getNodeName() == name)) {
-      // 		  result.push(child);
-      // 	       }
-      // 	    }
-      // 	 }
-      // 	 result.context = this[0];
-      // 	 result.selector = name;
-      // 	 return result;
-      // },
-
-      // parent : function(name) {
-      // 	 var result = aQuery();
-      // 	 for (var i = 0; i < this.length; i++) {
-      // 	    var parent = this[i].getParentNode();
-      // 	    if (parent) {
-      // 	       result.push(parent);
-      // 	    }
-      // 	 }
-
-      // 	 // TODO: Check to make sure this is right
-      // 	 result.context = this;
-      // 	 result.selector = name;
-      // 	 return result;
-      // },
-
 
       // Gets or sets the content of an element
       text : function(text) {
@@ -634,7 +598,34 @@ var _$ = function(document) {
 	 return proxy;
       },
 
-      // MISSING: access
+      // Mutifunctional method to get and set values to a collection
+      // The value/s can be optionally by executed if its a function
+      access: function( elems, key, value, exec, fn, pass ) {
+	 var length = elems.length;
+
+	 // Setting many attributes
+	 if ( typeof key === "object" ) {
+	    for ( var k in key ) {
+	       aQuery.access( elems, k, key[k], exec, fn, value );
+	    }
+	    return elems;
+	 }
+
+	 // Setting one attribute
+	 if ( value !== undefined ) {
+	    // Optionally, function values get executed if exec is true
+	    exec = !pass && exec && aQuery.isFunction(value);
+
+	    for ( var i = 0; i < length; i++ ) {
+	       fn( elems[i], key, exec ? value.call( elems[i], i, fn( elems[i], key ) ) : value, pass );
+	    }
+
+	    return elems;
+	 }
+
+	 // Getting an attribute
+	 return length ? fn( elems[0], key ) : undefined;
+      },
 
       now: function() {
 	 return (new Date()).getTime();
@@ -830,7 +821,7 @@ var _$ = function(document) {
 	   var matched = [],
 	   cur = elem[ dir ];
 
-	   while ( cur && cur.nodeType !== 9 && (until === undefined || cur.nodeType !== 1 || !jQuery( cur ).is( until )) ) {
+	   while ( cur && cur.nodeType !== 9 && (until === undefined || cur.nodeType !== 1 || !aQuery( cur ).is( until )) ) {
 	      if ( cur.nodeType === 1 ) {
 		 matched.push( cur );
 	      }
@@ -866,7 +857,50 @@ var _$ = function(document) {
 
 	   return r;
 	}
-});
+   });
+
+
+   aQuery.fn.extend({
+      attr: function ( name, value ) {
+ 	 return aQuery.access( this, name, value, true, aQuery.attr );
+      },
+
+      removeAttr: function( name, fn ) {
+	 return this.each(function(){
+	    aQuery.attr( this, name, "" );
+	       if ( this.nodeType === 1 ) {
+		  this.removeAttribute( name );
+	       }
+	    });
+      }
+
+   });
+
+   aQuery.extend({
+      attr: function( elem, name, value, pass ) {
+	 // don't set attributes on text and comment nodes
+	 if ( !elem || elem.nodeType === 3 || elem.nodeType === 8 ) {
+	    return undefined;
+	 }
+
+	 // Whether we are setting (or getting)
+	 var set = value !== undefined;
+
+	 if ( set ) {
+	    elem.setAttribute( name, value );
+	 }
+
+	 // Since getAttribute of a missing attribute returns "", we need special logic
+	 if ( !elem.attributes[ name ] && (elem.hasAttribute && !elem.hasAttribute( name )) ) {
+	    return undefined;
+	 }
+
+	 var attr = new String(elem.getAttribute( name ));
+
+	 // Non-existent attributes return null, we normalize to undefined
+	 return attr === null ? undefined : attr;
+      }
+   });
 
 
 

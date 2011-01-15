@@ -134,9 +134,10 @@ var aQueryTests = function() {
 
 
       test("Test accessors", function() {
-      	      expect(2);
+      	      expect(3);
       	      equal(aQuery("p").length, 61);
       	      equal(aQuery("/topic/title").text(), "The Waste Land");
+	      equal(aQuery("//sdfsdf").length, 0, "No hits in XPath, then zero length");
       	   });
 
 
@@ -602,10 +603,50 @@ var aQueryTests = function() {
 	   });
 
       test("Children", function() {
+	      expect(1);
 	      equals(aQuery("data").first().children().length, 8);
 	   });
 
 
+      test("Attributes", function() {
+	      expect(9);
+
+	      equals(aQuery("//data[@name = 'etext-no.']").attr("name"), "etext-no.");
+	      var data = aQuery("data").eq(1);
+
+	      // Set and get on single elements
+	      data.attr("foo", "bar");
+	      equals(data.attr("foo"), "bar");
+
+	      // Set multiple values
+	      data.attr({
+		 foo_a : "bar_a",
+		 foo_b : "bar_b"
+		 });
+	      equals(data.attr("foo_a"), "bar_a");
+	      equals(data.attr("foo_b"), "bar_b");
+
+	      // Set value on single element using function
+	      data.attr("name-computed", function() { return aQuery(this).attr("name") + "_hello"; });
+	      equals(data.attr("name-computed"), "etext-no._hello");
+
+	      var datas = aQuery("data");
+	      datas.attr("name-computed-2", function() { return aQuery(this).attr("name") + "_howdy"; });
+	      equals(datas.map(function() { return aQuery(this).attr("name-computed-2"); }).length, 9);
+
+      	      var pass = true;
+      	      for ( var i = 0; i < data.size(); i++ ) {
+      		 if ( datas.eq(i).attr("name-computed-2") != datas.eq(i).attr("name") + "_howdy" ) pass = false;
+      	      }
+	      ok(pass, "Setting multiple attributes with a function");
+
+	      // Test removing attributes
+	      datas.removeAttr("name-computed-2");
+	      equals(aQuery("//data[@name-computed-2]").length, 0, "removing multiple attributes");
+	      data.removeAttr("foo_a");
+	      equals(data.attr("foo_a"), undefined, "removing a single attribute");
+
+	   });
 
 
       // Destroy test environment
