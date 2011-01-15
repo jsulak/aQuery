@@ -260,6 +260,10 @@ var _$ = function(document) {
 	 return this.prevObject || jQuery(null);
       },
 
+      push: push,
+      sort: [].sort,
+      splice: [].splice,
+
       remove : function() {
 	    this.forEach(function(elem) {
 			 var parent = elem.getParentNode();
@@ -277,36 +281,36 @@ var _$ = function(document) {
 	 }
       },
 
-      // TODO: Right now, these only filter on name, instead of usual selectors
-      children : function(name) {
-	 var result = aQuery();
-	 for (var i = 0; i < this.length; i++) {
-	    var elem = this[i];
-	    for (var child = elem.firstChild; child != null; child = child.nextSibling) {
-	       if (child.nodeType == child.ELEMENT_NODE && (name == null || child.getNodeName() == name)) {
-		  result.push(child);
-	       }
-	    }
-	 }
-	 result.context = this[0];
-	 result.selector = name;
-	 return result;
-      },
+      // // TODO: Right now, these only filter on name, instead of usual selectors
+      // children : function(name) {
+      // 	 var result = aQuery();
+      // 	 for (var i = 0; i < this.length; i++) {
+      // 	    var elem = this[i];
+      // 	    for (var child = elem.firstChild; child != null; child = child.nextSibling) {
+      // 	       if (child.nodeType == child.ELEMENT_NODE && (name == null || child.getNodeName() == name)) {
+      // 		  result.push(child);
+      // 	       }
+      // 	    }
+      // 	 }
+      // 	 result.context = this[0];
+      // 	 result.selector = name;
+      // 	 return result;
+      // },
 
-      parent : function(name) {
-	 var result = aQuery();
-	 for (var i = 0; i < this.length; i++) {
-	    var parent = this[i].getParentNode();
-	    if (parent) {
-	       result.push(parent);
-	    }
-	 }
+      // parent : function(name) {
+      // 	 var result = aQuery();
+      // 	 for (var i = 0; i < this.length; i++) {
+      // 	    var parent = this[i].getParentNode();
+      // 	    if (parent) {
+      // 	       result.push(parent);
+      // 	    }
+      // 	 }
 
-	 // TODO: Check to make sure this is right
-	 result.context = this;
-	 result.selector = name;
-	 return result;
-      },
+      // 	 // TODO: Check to make sure this is right
+      // 	 result.context = this;
+      // 	 result.selector = name;
+      // 	 return result;
+      // },
 
 
       // Gets or sets the content of an element
@@ -345,7 +349,6 @@ var _$ = function(document) {
       // Make array methods avaliable
       // TODO: these should probably be removed.
 
-      push : Array.prototype.push,
       forEach : Array.prototype.forEach,
       reduce : Array.prototype.reduce,
       filter : Array.prototype.filter,
@@ -635,6 +638,20 @@ var _$ = function(document) {
 
       now: function() {
 	 return (new Date()).getTime();
+      },
+
+      unique: function ( results ) {
+
+	 results.sort(sortOrder);
+
+	 // TODO: jquery has a way to avoid this loop if the sort function didn't find any duplicates.
+	 for ( var i = 1; i < results.length; i++ ) {
+	    if ( results[i].equals( results[i - 1] ) ) {
+	       results.splice(i--, 1);
+	    }
+	 }
+
+	 return results;
       }
 
    });
@@ -644,6 +661,213 @@ var _$ = function(document) {
    aQuery.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(i, name) {
 		  class2type[ "[object " + name + "]" ] = name.toLowerCase();
 	       });
+
+   var runtil = /Until$/,
+	rparentsprev = /^(?:parents|prevUntil|prevAll)/,
+	// Note: This RegExp should be improved, or likely pulled from Sizzle
+	rmultiselector = /,/,
+	isSimple = /^.[^:#\[\.,]*$/;
+	//POS = aQuery.expr.match.POS;
+
+   var sortOrder = function( a, b ) {
+      var al, bl,
+      ap = [],
+      bp = [],
+      aup = a.parentNode,
+      bup = b.parentNode,
+      cur = aup;
+
+      // The nodes are identical, we can exit early
+      if ( a.equals(b) ) {
+	 hasDuplicate = true;
+	 return 0;
+
+      // If the nodes are siblings (or identical) we can do a quick check
+      } else if ( aup.equals(bup) ) {
+	 return siblingCheck( a, b );
+
+      // If no parents were found then the nodes are disconnected
+      } else if ( !aup ) {
+	 return -1;
+
+      } else if ( !bup ) {
+	 return 1;
+      }
+
+      // Otherwise they're somewhere else in the tree so we need
+      // to build up a full list of the parentNodes for comparison
+      while ( cur ) {
+	 ap.unshift( cur );
+	 cur = cur.parentNode;
+      }
+
+      cur = bup;
+
+      while ( cur ) {
+	 bp.unshift( cur );
+	 cur = cur.parentNode;
+      }
+
+      al = ap.length;
+      bl = bp.length;
+
+      // Start walking down the tree looking for a discrepancy
+      for ( var i = 0; i < al && i < bl; i++ ) {
+	 if ( !(ap[i].equals(bp[i])) ) {
+	    return siblingCheck( ap[i], bp[i] );
+	 }
+      }
+
+      // We ended someplace up the tree so do a sibling check
+      return i == al ?
+	 siblingCheck( a, bp[i], -1 ) :
+	 siblingCheck( ap[i], b, 1 );
+   };
+
+   var siblingCheck = function( a, b, ret ) {
+      if ( a.equals(b) ) {
+	 return ret;
+      }
+
+      var cur = a.nextSibling;
+
+      while ( cur ) {
+	 if ( cur.equals(b) ) {
+	    return -1;
+	 }
+
+	 cur = cur.nextSibling;
+      }
+
+      return 1;
+   };
+
+
+   // aQuery.fn.extend({
+   //    next: function() {
+
+   //    }
+
+   // });
+
+
+   aQuery.each({
+	parent: function( elem ) {
+	   var parent = elem.parentNode;
+	   return parent && parent.nodeType !== 11 ? parent : null;
+	},
+	parents: function( elem ) {
+	   return aQuery.dir( elem, "parentNode" );
+	},
+	// parentsUntil: function( elem, i, until ) {
+	//    return aQuery.dir( elem, "parentNode", until );
+	// },
+	next: function( elem ) {
+	   return aQuery.nth( elem, 2, "nextSibling" );
+	},
+	prev: function( elem ) {
+	   return aQuery.nth( elem, 2, "previousSibling" );
+	},
+	nextAll: function( elem ) {
+	   return aQuery.dir( elem, "nextSibling" );
+	},
+	prevAll: function( elem ) {
+	   return aQuery.dir( elem, "previousSibling" );
+	},
+	// nextUntil: function( elem, i, until ) {
+	//    return aQuery.dir( elem, "nextSibling", until );
+	// },
+	// prevUntil: function( elem, i, until ) {
+	//    return aQuery.dir( elem, "previousSibling", until );
+	// },
+	siblings: function( elem ) {
+	   return aQuery.sibling( elem.parentNode.firstChild, elem );
+	},
+	children: function( elem ) {
+	   return aQuery.sibling( elem.firstChild );
+	},
+	contents: function( elem ) {
+	   return aQuery.nodeName( elem, "iframe" ) ?
+	      elem.contentDocument || elem.contentWindow.document :
+	      aQuery.makeArray( elem.childNodes );
+	}
+   }, function( name, fn ) {
+	aQuery.fn[ name ] = function( until, selector ) {
+	   var ret = aQuery.map( this, fn, until );
+
+	   if ( !runtil.test( name ) ) {
+	      selector = until;
+	   }
+
+	   // TODO: Selectors aren't implemented
+	   // if ( selector && typeof selector === "string" ) {
+	   // 	ret = aQuery.filter( selector, ret );
+	   // }
+
+	   // TODO: unique() isn't implemented yet.
+	   ret = this.length > 1 ? aQuery.unique( ret ) : ret;
+
+	   if ( (this.length > 1 || rmultiselector.test( selector )) && rparentsprev.test( name ) ) {
+	      ret = ret.reverse();
+	   }
+
+	   return this.pushStack( ret, name, slice.call(arguments).join(",") );
+	};
+   });
+
+   aQuery.extend({
+	// filter: function( expr, elems, not ) {
+	//    if ( not ) {
+	//       expr = ":not(" + expr + ")";
+	//    }
+
+	//    return elems.length === 1 ?
+	//       jQuery.find.matchesSelector(elems[0], expr) ? [ elems[0] ] : [] :
+	//       jQuery.find.matches(expr, elems);
+	// },
+
+	dir: function( elem, dir, until ) {
+	   var matched = [],
+	   cur = elem[ dir ];
+
+	   while ( cur && cur.nodeType !== 9 && (until === undefined || cur.nodeType !== 1 || !jQuery( cur ).is( until )) ) {
+	      if ( cur.nodeType === 1 ) {
+		 matched.push( cur );
+	      }
+	      cur = cur[dir];
+	   }
+	   return matched;
+	},
+
+	nth: function( cur, result, dir, elem ) {
+	   // TODO: I'm not sure why the original form didn't work
+	   if (result == null) {
+	      result = 1;
+	   }
+	   var num = 0;
+
+	   for ( ; cur; cur = cur[dir] ) {
+	      if ( cur.nodeType == 1 && ++num === result ) {
+		 break;
+	      }
+	   }
+
+	   return cur;
+	},
+
+	sibling: function( n, elem ) {
+	   var r = [];
+
+	   for ( ; n; n = n.nextSibling ) {
+	      if ( n.nodeType === 1 && n !== elem ) {
+		 r.push( n );
+	      }
+	   }
+
+	   return r;
+	}
+});
+
 
 
    return aQuery;
