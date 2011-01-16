@@ -308,16 +308,7 @@ var _$ = function(document) {
 	    item.addEventListener(type, listener, false);
 	 }
 
-      },
-
-      // Make array methods avaliable
-      // TODO: these should probably be removed.
-
-      forEach : Array.prototype.forEach,
-      reduce : Array.prototype.reduce,
-      filter : Array.prototype.filter,
-      indexOf : Array.prototype.indexOf,
-      join : Array.prototype.join
+      }
    };
 
    // Give the init function the aQuery prototype for later instantiation
