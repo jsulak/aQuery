@@ -137,7 +137,7 @@ var aQueryTests = function() {
       	      expect(3);
       	      equal(aQuery("p").length, 61);
       	      equal(aQuery("/topic/title").text(), "The Waste Land");
-	      equal(aQuery("//sdfsdf").length, 0, "No hits in XPath, then zero length");
+      	      equal(aQuery("//sdfsdf").length, 0, "No hits in XPath, then zero length");
       	   });
 
 
@@ -584,22 +584,28 @@ var aQueryTests = function() {
 
 
       test("Parent & Parents", function() {
-	      expect(4);
-	      var titleParents = aQuery("title").parent();
-	      var attr = titleParents.attr("id");
-	      equals(attr, "topic-1");
+      	      expect(4);
+      	      var titleParents = aQuery("title").parent();
+      	      var attr = titleParents.attr("id");
+      	      equals(attr, "topic-1");
 
-	      equals(aQuery("p").first().parents().length, 2);
-	      equals(aQuery("p").parents().length, 10);
-	      equals(aQuery("p").parent().length, 8);
-	   });
+      	      equals(aQuery("p").first().parents().length, 2);
+      	      equals(aQuery("p").parents().length, 10);
+      	      equals(aQuery("p").parent().length, 8);
+      	   });
 
       test("Next & Prev", function() {
-	      expect(4);
+	      expect(7);
 	      equals(aQuery("//data[@name = 'etext-no.']").next().attr("name"), "release-date");
 	      equals(aQuery("//data[@name = 'release-date']").prev().attr("name"), "etext-no.");
 	      equals(aQuery("//data[@name = 'etext-no.']").nextAll().length, 7);
 	      equals(aQuery("data").last().prevAll().length, 7);
+
+	      // Test with selectors
+	      equals(aQuery("//data/data").next("//data[@name = 'release-date']").attr("name"), "release-date");
+
+	      equals(aQuery("//data/data").last().prevAll("//jjj").length, 0);
+	      equals(aQuery("//data/data").last().prevAll("//data[@name]").length, 7);
 	   });
 
       test("Children", function() {

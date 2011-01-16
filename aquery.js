@@ -140,18 +140,17 @@ var _$ = function(document) {
 					     document.getAclId());
 	       var oids = oidNodesString.split("-");
 
-	       var result = aQuery();
-	       result.selector = selector;
-	       result.context = document;
+	       this.selector = selector;
+	       this.context = document;
 
 	       if (oids[0] == "" && oids.length == 1) {
-		  return result;
+		  return this;
 	       }
 
-	       for (var i = 0; i < oids.length; i++) {
-		  result.push(Acl.getDOMOID(oids[i]));
-	       }
-	       return result;
+
+	       var result = aQuery.map(oids, function(e) { return Acl.getDOMOID(e); } );
+
+	       return aQuery.merge(this, result);
 	    }
 
 	    // Otherwise return all elements in document with the
@@ -173,7 +172,6 @@ var _$ = function(document) {
 	 return aQuery.makeArray(selector, this);
 
       },
-
 
       // Start with an empty selector
       selector: "",
@@ -725,12 +723,13 @@ var _$ = function(document) {
    };
 
 
-   // aQuery.fn.extend({
-   //    next: function() {
+   aQuery.fn.extend({
 
-   //    }
 
-   // });
+      	is: function( selector ) {
+		return !!selector && aQuery.filter( selector, this ).length > 0;
+	}
+   });
 
 
    aQuery.each({
@@ -741,9 +740,9 @@ var _$ = function(document) {
 	parents: function( elem ) {
 	   return aQuery.dir( elem, "parentNode" );
 	},
-	// parentsUntil: function( elem, i, until ) {
-	//    return aQuery.dir( elem, "parentNode", until );
-	// },
+	parentsUntil: function( elem, i, until ) {
+	    return aQuery.dir( elem, "parentNode", until );
+	},
 	next: function( elem ) {
 	   return aQuery.nth( elem, 2, "nextSibling" );
 	},
@@ -756,12 +755,12 @@ var _$ = function(document) {
 	prevAll: function( elem ) {
 	   return aQuery.dir( elem, "previousSibling" );
 	},
-	// nextUntil: function( elem, i, until ) {
-	//    return aQuery.dir( elem, "nextSibling", until );
-	// },
-	// prevUntil: function( elem, i, until ) {
-	//    return aQuery.dir( elem, "previousSibling", until );
-	// },
+	nextUntil: function( elem, i, until ) {
+	    return aQuery.dir( elem, "nextSibling", until );
+	},
+	prevUntil: function( elem, i, until ) {
+	    return aQuery.dir( elem, "previousSibling", until );
+	},
 	siblings: function( elem ) {
 	   return aQuery.sibling( elem.parentNode.firstChild, elem );
 	},
@@ -781,10 +780,9 @@ var _$ = function(document) {
 	      selector = until;
 	   }
 
-	   // TODO: Selectors aren't implemented
-	   // if ( selector && typeof selector === "string" ) {
-	   // 	ret = aQuery.filter( selector, ret );
-	   // }
+	   if ( selector && typeof selector === "string" ) {
+	    	ret = aQuery.filter( selector, ret );
+	   }
 
 	   // TODO: unique() isn't implemented yet.
 	   ret = this.length > 1 ? aQuery.unique( ret ) : ret;
@@ -798,15 +796,31 @@ var _$ = function(document) {
    });
 
    aQuery.extend({
-	// filter: function( expr, elems, not ) {
-	//    if ( not ) {
-	//       expr = ":not(" + expr + ")";
-	//    }
+	filter: function( expr, elems, not ) {
+	   // TODO: enable not
+	   //if ( not ) {
+	   //   expr = ":not(" + expr + ")";
+	   //}
 
-	//    return elems.length === 1 ?
-	//       jQuery.find.matchesSelector(elems[0], expr) ? [ elems[0] ] : [] :
-	//       jQuery.find.matches(expr, elems);
-	// },
+	   var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
+	   				 expr,
+	   				 document.getAclId());
+	   var newOids = new String(oidNodesString).split("-");
+	   var oldOids = aQuery.map(elems, function(e) { return new String(e.getFirstOID()); } );
+	   var filteredOids = [];
+
+	   // TODO: I'm not sure why the built-in indexOf array method doesn't work.
+	   for (var i = 0; i < oldOids.length; i++) {
+	      for (var j = 0; j < newOids.length; j++) {
+		 if (oldOids[i] == newOids[j]) {
+		    filteredOids.push(oldOids[i]);
+		    break;
+		 }
+	      }
+	   }
+
+	   return aQuery.map(filteredOids, function(e) { return Acl.getDOMOID(e); } );
+	},
 
 	dir: function( elem, dir, until ) {
 	   var matched = [],
@@ -864,7 +878,6 @@ var _$ = function(document) {
 	       }
 	    });
       }
-
    });
 
    aQuery.extend({
