@@ -70,8 +70,10 @@ var _$ = function(document) {
 
    // Used for trimming whitespace
    trimLeft = /^\s+/,
-   trimRight = /\s+$/;
+   trimRight = /\s+$/,
 
+   // Test for full XPath
+   fullXPath = /^\//;
 
    // ================================
    // Private functions
@@ -149,9 +151,9 @@ var _$ = function(document) {
 	    else if (Acl.func("xpath_valid", selector)) {
 	       // TODO: Allow this to work with a context
 	       var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
-					     selector.indexOf("/") != 0 ?
-						"//" + selector :
-						selector,
+					     fullXPath.test ( selector ) ?
+						selector :
+						"//" + selector,
 					     document.getAclId());
 	       var oids = oidNodesString.split("-");
 
@@ -811,9 +813,9 @@ var _$ = function(document) {
            // the context of each element instead of the entire document.
 
 	   var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
-	   				  expr.indexOf("/") != 0 ?
-						"//" + expr :
-						expr,
+	   				 fullXPath.test ( expr ) ?
+						expr :
+						"//" + expr,
 	   				 document.getAclId());
 	   var newOids = new String(oidNodesString).split("-");
 	   var oldOids = aQuery.map(elems, function(e) { return new String(e.getFirstOID()); } );
