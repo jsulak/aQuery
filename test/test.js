@@ -137,7 +137,7 @@ var aQueryTests = function() {
       	      expect(3);
       	      equal(aQuery("p").length, 61);
       	      equal(aQuery("/topic/title").text(), "The Waste Land");
-      	      equal(aQuery("//sdfsdf").length, 0, "No hits in XPath, then zero length");
+      	      equal(aQuery("sdfsdf").length, 0, "No hits in XPath, then zero length");
       	   });
 
 
@@ -281,13 +281,13 @@ var aQueryTests = function() {
       test("get()", function() {
       	      expect(1);
       	      // For some reason, deep equal doesn't seem to work on arrays of elements.
-      	      equal( aQuery("//*[@id]").get().length, 2 );
+      	      equal( aQuery("*[@id]").get().length, 2 );
       	   });
 
       test("get(1)", function() {
       	      expect(1);
       	      // TODO: this whole Java string vs. javascript string thing is annoying
-      	      equal( new String(aQuery("//*[@id]").get(0).tagName), "topic");
+      	      equal( new String(aQuery("*[@id]").get(0).tagName), "topic");
       	   });
 
       test("get(-1)", function() {
@@ -320,8 +320,8 @@ var aQueryTests = function() {
 
       	      // Note: have to use .equals because of rhino/AOM weirdness that causes == not to work
       	      equals( $data.slice(1,2).attr("name"), 'etext-no.', "slice(1,1)" );
-      	      ok( $data.slice(1,2).get()[0].equals(aQuery("//data[@name = 'etext-no.']")[0]), "slice(1,1)" );
-      	      ok( $data.slice(-1).get()[0].equals(aQuery("//data[@name = 'copyright-status']")[0]), "slice(-1)" );
+      	      ok( $data.slice(1,2).get()[0].equals(aQuery("data[@name = 'etext-no.']")[0]), "slice(1,1)" );
+      	      ok( $data.slice(-1).get()[0].equals(aQuery("data[@name = 'copyright-status']")[0]), "slice(-1)" );
       	      equals($data.slice(-1).length, 1, "slice(-1)");
       	      equals($data.slice(1).length, 8, "slice(1)");
       	   });
@@ -596,24 +596,24 @@ var aQueryTests = function() {
 
       test("Next & Prev", function() {
 	      expect(8);
-	      equals(aQuery("//data[@name = 'etext-no.']").next().attr("name"), "release-date", "Simple next");
-	      equals(aQuery("//data[@name = 'release-date']").prev().attr("name"), "etext-no.", "Simple prev");
-	      equals(aQuery("//data[@name = 'etext-no.']").nextAll().length, 7, "nextAll");
+	      equals(aQuery("data[@name = 'etext-no.']").next().attr("name"), "release-date", "Simple next");
+	      equals(aQuery("data[@name = 'release-date']").prev().attr("name"), "etext-no.", "Simple prev");
+	      equals(aQuery("data[@name = 'etext-no.']").nextAll().length, 7, "nextAll");
 	      equals(aQuery("data").last().prevAll().length, 7, "prevAll");
 
 	      // Test with selectors
-	      equals(aQuery("//data/data").next("//data[@name = 'release-date']").attr("name"), "release-date", "next() with selector");
+	      equals(aQuery("data/data").next("data[@name = 'release-date']").attr("name"), "release-date", "next() with selector");
 
-	      equals(aQuery("//data/data").last().prevAll("//jjj").length, 0, "prevAll with selector");
-	      equals(aQuery("//data/data").last().prevAll("//data[@name]").length, 7, "prevAll with selector");
+	      equals(aQuery("data/data").last().prevAll("jjj").length, 0, "prevAll with selector");
+	      equals(aQuery("data/data").last().prevAll("data[@name]").length, 7, "prevAll with selector");
 
-	      equals(aQuery("//data/data").first().nextUntil("//data[@name = 'base-directory']").length, 3, "nextUntil");
+	      equals(aQuery("data/data").first().nextUntil("data[@name = 'base-directory']").length, 3, "nextUntil");
 	   });
 
       test("Is", function() {
 	      expect(6);
-	      equals(aQuery("data").is("//data"), true);
-	      equals(aQuery("//data").is("//*"), true);
+	      equals(aQuery("data").is("data"), true);
+	      equals(aQuery("data").is("*"), true);
 
 	      ok( !aQuery('#foo').is(0), 'Expected false for an invalid expression - 0' );
 	      ok( !aQuery('#foo').is(null), 'Expected false for an invalid expression - null' );
@@ -625,13 +625,13 @@ var aQueryTests = function() {
       test("Children", function() {
 	      expect(2);
 	      equals(aQuery("data").first().children().length, 8, "Simple children");
-	      equals(aQuery("data").children("//data").length, 8, "Filtered children of multiple elements");
+	      equals(aQuery("data").children("data").length, 8, "Filtered children of multiple elements");
 	   });
 
       test("Attributes", function() {
 	      expect(9);
 
-	      equals(aQuery("//data[@name = 'etext-no.']").attr("name"), "etext-no.");
+	      equals(aQuery("data[@name = 'etext-no.']").attr("name"), "etext-no.");
 	      var data = aQuery("data").eq(1);
 
 	      // Set and get on single elements
@@ -662,7 +662,7 @@ var aQueryTests = function() {
 
 	      // Test removing attributes
 	      datas.removeAttr("name-computed-2");
-	      equals(aQuery("//data[@name-computed-2]").length, 0, "removing multiple attributes");
+	      equals(aQuery("data[@name-computed-2]").length, 0, "removing multiple attributes");
 	      data.removeAttr("foo_a");
 	      equals(data.attr("foo_a"), undefined, "removing a single attribute");
 

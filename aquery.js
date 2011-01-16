@@ -65,9 +65,13 @@ var _$ = function(document) {
    // [[Class]] -> type pairs
    class2type = {},
 
+   // Check for non-word characters
+   rnonword = /\W/,
+
    // Used for trimming whitespace
    trimLeft = /^\s+/,
    trimRight = /\s+$/;
+
 
    // ================================
    // Private functions
@@ -131,12 +135,23 @@ var _$ = function(document) {
 	       return this;
 	    }
 
+	    // Otherwise return all elements in document with the
+	    // $("tagname")
+	    else if ( !rnonword.test( selector ) ) {
+	       this.selector = selector;
+	       this.context = document;
+	       selector = document.getElementsByTagName(selector);
+	       return aQuery.merge(this, selector);
+	    }
+
+
 	    // If it is a valid xpath expression, then do that
-	    else if (selector.indexOf("/") != -1 && Acl.func("xpath_valid", selector)) {
+	    else if (Acl.func("xpath_valid", selector)) {
 	       // TODO: Allow this to work with a context
-	       // Will probably have to check if it is a document or a node
 	       var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
-					     selector,
+					     selector.indexOf("/") != 0 ?
+						"//" + selector :
+						selector,
 					     document.getAclId());
 	       var oids = oidNodesString.split("-");
 
@@ -147,20 +162,11 @@ var _$ = function(document) {
 		  return this;
 	       }
 
-
 	       var result = aQuery.map(oids, function(e) { return Acl.getDOMOID(e); } );
 
 	       return aQuery.merge(this, result);
 	    }
 
-	    // Otherwise return all elements in document with the
-	    // $("tagname")
-	    else {
-	       this.selector = selector;
-	       this.context = document;
-	       selector = document.getElementsByTagName(selector);
-	       return aQuery.merge(this, selector);
-	    }
 
 	 }
 
@@ -801,8 +807,13 @@ var _$ = function(document) {
 	   //   expr = ":not(" + expr + ")";
 	   //}
 
+	   // TODO: This might be able to be optimized by evaluating the xpath from
+           // the context of each element instead of the entire document.
+
 	   var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
-	   				 expr,
+	   				  expr.indexOf("/") != 0 ?
+						"//" + expr :
+						expr,
 	   				 document.getAclId());
 	   var newOids = new String(oidNodesString).split("-");
 	   var oldOids = aQuery.map(elems, function(e) { return new String(e.getFirstOID()); } );
