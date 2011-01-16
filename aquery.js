@@ -784,7 +784,6 @@ var _$ = function(document) {
 	    	ret = aQuery.filter( selector, ret );
 	   }
 
-	   // TODO: unique() isn't implemented yet.
 	   ret = this.length > 1 ? aQuery.unique( ret ) : ret;
 
 	   if ( (this.length > 1 || rmultiselector.test( selector )) && rparentsprev.test( name ) ) {

@@ -595,24 +595,38 @@ var aQueryTests = function() {
       	   });
 
       test("Next & Prev", function() {
-	      expect(7);
-	      equals(aQuery("//data[@name = 'etext-no.']").next().attr("name"), "release-date");
-	      equals(aQuery("//data[@name = 'release-date']").prev().attr("name"), "etext-no.");
-	      equals(aQuery("//data[@name = 'etext-no.']").nextAll().length, 7);
-	      equals(aQuery("data").last().prevAll().length, 7);
+	      expect(8);
+	      equals(aQuery("//data[@name = 'etext-no.']").next().attr("name"), "release-date", "Simple next");
+	      equals(aQuery("//data[@name = 'release-date']").prev().attr("name"), "etext-no.", "Simple prev");
+	      equals(aQuery("//data[@name = 'etext-no.']").nextAll().length, 7, "nextAll");
+	      equals(aQuery("data").last().prevAll().length, 7, "prevAll");
 
 	      // Test with selectors
-	      equals(aQuery("//data/data").next("//data[@name = 'release-date']").attr("name"), "release-date");
+	      equals(aQuery("//data/data").next("//data[@name = 'release-date']").attr("name"), "release-date", "next() with selector");
 
-	      equals(aQuery("//data/data").last().prevAll("//jjj").length, 0);
-	      equals(aQuery("//data/data").last().prevAll("//data[@name]").length, 7);
+	      equals(aQuery("//data/data").last().prevAll("//jjj").length, 0, "prevAll with selector");
+	      equals(aQuery("//data/data").last().prevAll("//data[@name]").length, 7, "prevAll with selector");
+
+	      equals(aQuery("//data/data").first().nextUntil("//data[@name = 'base-directory']").length, 3, "nextUntil");
+	   });
+
+      test("Is", function() {
+	      expect(6);
+	      equals(aQuery("data").is("//data"), true);
+	      equals(aQuery("//data").is("//*"), true);
+
+	      ok( !aQuery('#foo').is(0), 'Expected false for an invalid expression - 0' );
+	      ok( !aQuery('#foo').is(null), 'Expected false for an invalid expression - null' );
+	      ok( !aQuery('#foo').is(''), 'Expected false for an invalid expression - ""' );
+	      ok( !aQuery('#foo').is(undefined), 'Expected false for an invalid expression - undefined' );
+
 	   });
 
       test("Children", function() {
-	      expect(1);
-	      equals(aQuery("data").first().children().length, 8);
+	      expect(2);
+	      equals(aQuery("data").first().children().length, 8, "Simple children");
+	      equals(aQuery("data").children("//data").length, 8, "Filtered children of multiple elements");
 	   });
-
 
       test("Attributes", function() {
 	      expect(9);
