@@ -933,27 +933,32 @@ var _$ = function(document) {
 
 	   // TODO: This might be able to be optimized by evaluating the xpath from
            // the context of each element instead of the entire document.
+	   // TODO: This only works for xpath selectors, not element or id selectors
 
-	   var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
-	   				 fullXPath.test ( expr ) ?
-						expr :
-						"//" + expr,
-	   				 document.getAclId());
-	   var newOids = new String(oidNodesString).split("-");
-	   var oldOids = aQuery.map(elems, function(e) { return new String(e.getFirstOID()); } );
-	   var filteredOids = [];
+	   // var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
+	   // 				 fullXPath.test ( expr ) ?
+	   // 					expr :
+	   // 					"//" + expr,
+	   // 				 document.getAclId());
+	   // var newOids = new String(oidNodesString).split("-");
+	   // var oldOids = aQuery.map(elems, function(e) { return new String(e.getFirstOID()); } );
+	   // var filteredOids = [];
 
-	   // TODO: I'm not sure why the built-in indexOf array method doesn't work.
-	   for (var i = 0; i < oldOids.length; i++) {
-	      for (var j = 0; j < newOids.length; j++) {
-		 if (oldOids[i] == newOids[j]) {
-		    filteredOids.push(oldOids[i]);
-		    break;
-		 }
-	      }
-	   }
+	   // // TODO: I'm not sure why the built-in indexOf array method doesn't work.
+	   // for (var i = 0; i < oldOids.length; i++) {
+	   //    for (var j = 0; j < newOids.length; j++) {
+	   // 	 if (oldOids[i] == newOids[j]) {
+	   // 	    filteredOids.push(oldOids[i]);
+	   // 	    break;
+	   // 	 }
+	   //    }
+	   // }
 
-	   return aQuery.map(filteredOids, function(e) { return Acl.getDOMOID(e); } );
+	   //return aQuery.map(filteredOids, function(e) { return Acl.getDOMOID(e); } );
+
+	   return elems.length === 1 ?
+	      aQuery.find.matchesSelector(elems[0], expr) ? [ elems[0] ] : [] :
+	      aQuery.find.matches(expr, elems);
 	},
 
 	dir: function( elem, dir, until ) {
@@ -1071,7 +1076,89 @@ var _$ = function(document) {
 			 });
    }
 
+   // Simmer is an XPath version of the Sizzle selector engine.
+   var Simmer = function( selector, context, results, seed ) {
+      results = results || [];
+      context = context || document;
 
+      var origContext = context;
+
+      if ( context.nodeType !== 1 && context.nodeType !== 9 ) {
+	 return results;
+      }
+
+      if ( !selector || typeof selector !== "string" ) {
+	 return results;
+      }
+
+      // Handle ID matching: #ID
+      if (selector.match(/^#/)) {
+	 // TODO: If the context is an element, make sure that it is actually a descendant
+	 var id = selector.substr(1);
+	 results.push(document.getElementById(id));
+      }
+
+      else if ( !rnonword.test( selector ) ) {
+	 results = aQuery.merge(results, context.getElementsByTagName(selector));
+      }
+
+      // If it is a valid xpath expression, then do that
+      else if (Acl.func("xpath_valid", selector)) {
+	 // TODO: Allow this to work with a context
+
+	 var xpath = fullXPath.test ( selector ) ?
+	    selector :
+	    "//" + selector;
+
+	 var oidNodesString;
+
+	 // If we have a context element, then use it
+	 if (context.nodeType === 1) {
+	    oidNodesString = Acl.func("aquery_utils::get_xpath_oids",
+				      context.getFirstOID(),
+				      xpath);
+	 } else {
+	    oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
+				      xpath,
+				      context.getAclId());
+	 }
+
+	 var oids = oidNodesString.split("-");
+	 if (oids[0] == "" && oids.length == 1) {
+	    return results;
+	 }
+
+	 results = aQuery.merge(results, aQuery.map(oids, function(e) { return Acl.getDOMOID(e); } ));
+      }
+
+      // If we've been passed a seed, then filter to only include items that are part of the original seed
+      if (seed && results.length > 0) {
+	 var filteredResults = [];
+	 for (var i = 0; i < seed.length; i++) {
+	    for (var j = 0; j < results.length; j++) {
+	       if (seed[i].equals(results[j])) {
+		  filteredResults.push(seed[i]);
+		  break;
+	       }
+	    }
+	 }
+	 return filteredResults;
+      }
+
+      return results;
+   };
+
+
+   Simmer.matches = function( expr, set ) {
+      return Simmer( expr, null, null, set );
+   };
+
+   Simmer.matchesSelector = function( node, expr ) {
+      return Simmer( expr, null, null, [node] ).length > 0;
+   };
+
+
+   aQuery.find = Simmer;
 
    return aQuery;
 };
