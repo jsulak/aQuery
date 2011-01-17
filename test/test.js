@@ -362,6 +362,11 @@ var aQueryTests = function() {
 
       	   });
 
+      test("end()", function() {
+	      var data = aQuery("data[data]");
+	      equals(data.children().end().length, 1, "end");
+	   });
+
       test("aQuery.merge()", function() {
       	      expect(8);
 
@@ -595,79 +600,181 @@ var aQueryTests = function() {
       	   });
 
       test("Next & Prev", function() {
-	      expect(8);
-	      equals(aQuery("data[@name = 'etext-no.']").next().attr("name"), "release-date", "Simple next");
-	      equals(aQuery("data[@name = 'release-date']").prev().attr("name"), "etext-no.", "Simple prev");
-	      equals(aQuery("data[@name = 'etext-no.']").nextAll().length, 7, "nextAll");
-	      equals(aQuery("data").last().prevAll().length, 7, "prevAll");
+      	      expect(8);
+      	      equals(aQuery("data[@name = 'etext-no.']").next().attr("name"), "release-date", "Simple next");
+      	      equals(aQuery("data[@name = 'release-date']").prev().attr("name"), "etext-no.", "Simple prev");
+      	      equals(aQuery("data[@name = 'etext-no.']").nextAll().length, 7, "nextAll");
+      	      equals(aQuery("data").last().prevAll().length, 7, "prevAll");
 
-	      // Test with selectors
-	      equals(aQuery("data/data").next("data[@name = 'release-date']").attr("name"), "release-date", "next() with selector");
+      	      // Test with selectors
+      	      equals(aQuery("data/data").next("data[@name = 'release-date']").attr("name"), "release-date", "next() with selector");
 
-	      equals(aQuery("data/data").last().prevAll("jjj").length, 0, "prevAll with selector");
-	      equals(aQuery("data/data").last().prevAll("data[@name]").length, 7, "prevAll with selector");
+      	      equals(aQuery("data/data").last().prevAll("jjj").length, 0, "prevAll with selector");
+      	      equals(aQuery("data/data").last().prevAll("data[@name]").length, 7, "prevAll with selector");
 
-	      equals(aQuery("data/data").first().nextUntil("data[@name = 'base-directory']").length, 3, "nextUntil");
-	   });
+      	      equals(aQuery("data/data").first().nextUntil("data[@name = 'base-directory']").length, 3, "nextUntil");
+      	   });
 
       test("Is", function() {
-	      expect(6);
-	      equals(aQuery("data").is("data"), true);
-	      equals(aQuery("data").is("*"), true);
+      	      expect(6);
+      	      equals(aQuery("data").is("data"), true);
+      	      equals(aQuery("data").is("*"), true);
 
-	      ok( !aQuery('#foo').is(0), 'Expected false for an invalid expression - 0' );
-	      ok( !aQuery('#foo').is(null), 'Expected false for an invalid expression - null' );
-	      ok( !aQuery('#foo').is(''), 'Expected false for an invalid expression - ""' );
-	      ok( !aQuery('#foo').is(undefined), 'Expected false for an invalid expression - undefined' );
+      	      ok( !aQuery('#foo').is(0), 'Expected false for an invalid expression - 0' );
+      	      ok( !aQuery('#foo').is(null), 'Expected false for an invalid expression - null' );
+      	      ok( !aQuery('#foo').is(''), 'Expected false for an invalid expression - ""' );
+      	      ok( !aQuery('#foo').is(undefined), 'Expected false for an invalid expression - undefined' );
 
-	   });
+      	   });
 
       test("Children", function() {
-	      expect(2);
-	      equals(aQuery("data").first().children().length, 8, "Simple children");
-	      equals(aQuery("data").children("data").length, 8, "Filtered children of multiple elements");
-	   });
+      	      expect(2);
+      	      equals(aQuery("data").first().children().length, 8, "Simple children");
+      	      equals(aQuery("data").children("data").length, 8, "Filtered children of multiple elements");
+      	   });
 
       test("Attributes", function() {
-	      expect(9);
+      	      expect(9);
 
-	      equals(aQuery("data[@name = 'etext-no.']").attr("name"), "etext-no.");
-	      var data = aQuery("data").eq(1);
+      	      equals(aQuery("data[@name = 'etext-no.']").attr("name"), "etext-no.");
+      	      var data = aQuery("data").eq(1);
 
-	      // Set and get on single elements
-	      data.attr("foo", "bar");
-	      equals(data.attr("foo"), "bar");
+      	      // Set and get on single elements
+      	      data.attr("foo", "bar");
+      	      equals(data.attr("foo"), "bar");
 
-	      // Set multiple values
-	      data.attr({
-		 foo_a : "bar_a",
-		 foo_b : "bar_b"
-		 });
-	      equals(data.attr("foo_a"), "bar_a");
-	      equals(data.attr("foo_b"), "bar_b");
+      	      // Set multiple values
+      	      data.attr({
+      		 foo_a : "bar_a",
+      		 foo_b : "bar_b"
+      		 });
+      	      equals(data.attr("foo_a"), "bar_a");
+      	      equals(data.attr("foo_b"), "bar_b");
 
-	      // Set value on single element using function
-	      data.attr("name-computed", function() { return aQuery(this).attr("name") + "_hello"; });
-	      equals(data.attr("name-computed"), "etext-no._hello");
+      	      // Set value on single element using function
+      	      data.attr("name-computed", function() { return aQuery(this).attr("name") + "_hello"; });
+      	      equals(data.attr("name-computed"), "etext-no._hello");
 
-	      var datas = aQuery("data");
-	      datas.attr("name-computed-2", function() { return aQuery(this).attr("name") + "_howdy"; });
-	      equals(datas.map(function() { return aQuery(this).attr("name-computed-2"); }).length, 9);
+      	      var datas = aQuery("data");
+      	      datas.attr("name-computed-2", function() { return aQuery(this).attr("name") + "_howdy"; });
+      	      equals(datas.map(function() { return aQuery(this).attr("name-computed-2"); }).length, 9);
 
       	      var pass = true;
       	      for ( var i = 0; i < data.size(); i++ ) {
       		 if ( datas.eq(i).attr("name-computed-2") != datas.eq(i).attr("name") + "_howdy" ) pass = false;
       	      }
-	      ok(pass, "Setting multiple attributes with a function");
+      	      ok(pass, "Setting multiple attributes with a function");
 
-	      // Test removing attributes
-	      datas.removeAttr("name-computed-2");
-	      equals(aQuery("data[@name-computed-2]").length, 0, "removing multiple attributes");
-	      data.removeAttr("foo_a");
-	      equals(data.attr("foo_a"), undefined, "removing a single attribute");
+      	      // Test removing attributes
+      	      datas.removeAttr("name-computed-2");
+      	      equals(aQuery("data[@name-computed-2]").length, 0, "removing multiple attributes");
+      	      data.removeAttr("foo_a");
+      	      equals(data.attr("foo_a"), undefined, "removing a single attribute");
+
+      	   });
+
+
+      test("inArray", function() {
+	      var data = aQuery("data");
+	      equals(aQuery.inArray(data[0], data.get()), 0);
+	      equals(aQuery.inArray(aQuery("topic")[0], data.get()), -1);
+	   });
+
+
+      test("filter", function() {
+	      var data = aQuery("data");
+	      equals(data.filter("data[@name]").length, data.length, "Filter (removing none)");
+	      equals(data.filter("data[@hello]").length, 0, "Filter (get none)");
+	      equals(data.filter("data/data").length, 8, "Filter (getting some)");
+	      equals(data.filter(function() { return aQuery(this).attr("name") == "release-date"; }).length, 1, "Filter using function");
+	      equals(data.filter(data[0]).length, 1, "Filter with element");
+	      equals(data.filter(aQuery("data/data")).length, 8, "Filter with aQuery object");
 
 	   });
 
+      test("not", function() {
+	      var data = aQuery("data");
+	      equals(data.not("data/data").length, 1, "Not (selector)");
+	      equals(data.not(data[0]).length, 8, "Not (element)");
+	      equals(data.not(data.get()).length, 0, "Not (elements)");
+	      equals(data.not(function() { return aQuery(this).attr("name") != "release-date"; }).length, 1, "Not (function)");
+
+	   });
+
+      test("has", function() {
+	      expect(3);
+	      equals(aQuery("data").has("data").length, 1, "has (direct child)");
+	      equals(aQuery("data").has(aQuery("data").get(2)).length, 1, "has (direct child element)");
+	      equals(aQuery("data").has(aQuery("data")).length, 1, "has (aQuery object)");
+	   });
+
+      test("contains", function() {
+	      expect(2);
+	      var data = aQuery("data").first();
+	      var d2 = aQuery("data/data").first();
+	      equals(aQuery.contains(data[0], d2[0]), true);
+	      equals(aQuery.contains(d2[0], data[0]), false);
+	   });
+
+      test("index()", function() {
+	      expect(1);
+	      equals(aQuery("data[@name = 'release-date']").index(), 1, "Returns the index of a child among its siblings");
+	   });
+
+      test("index(Object|String|undefined)", function() {
+	      expect(6);
+
+	      var data = aQuery("data/data");
+	      var root = aQuery("/*");
+
+	      // Passing a node
+	      equals(data.index(data[1]), 1, "Check for index of element.");
+	      equals(data.index(root[0]), -1, "Check for missing element.");
+
+	      // Passing an aQuery object
+	      equals(data.index(data), 0, "Pass in aQuery object");
+	      equals(data.index(data.eq(1)), 1, "Pass in aQuery object");
+
+	      // Passing a selector
+	      equals(aQuery(data[0]).index("data/data"), 0, "Chcek for index among returned results");
+	      equals(aQuery("data/data[2]").index("data"), 2, "Check for index among returned results");
+	   });
+
+      test("add(String|Element|Array|undefined", function() {
+	      expect(9);
+
+	      var data = aQuery("data/data");
+	      var prologs = aQuery("prolog");
+
+	      // Add an aquery object
+	      equals(data.add(prologs).length, data.length + prologs.length, "Add aquery object");
+	      equals("" + data.add(prologs).first()[0].getTagName(), "prolog", "Add aquery object");
+
+	      // Add a selector
+	      equals(data.add("prolog").length, data.length + 1, "Add selector");
+	      equals("" + data.add("prolog")[0].getTagName(), "prolog", "Add selector");
+
+	      // Add an actual Element
+	      equals(data.add(prologs[0]).length, data.length + 1, "Add element");
+	      equals("" + data.add(prologs[0])[0].getTagName(), "prolog", "Add element");
+
+	      // Make sure that the elements are only added once
+	      equals(data.add("data/data").length, data.length, "Add identical elements");
+
+	      same(["etext-no.", "release-date", "loc-class", "subject", "base-directory", "language", "creator", "copyright-status"],
+		   data.add("data/data").map(function() { return aQuery(this).attr("name"); }).get());
+
+	      var notDefined;
+	      equals( aQuery([]).add(notDefined).length, 0, "Check that undefined adds nothing" );
+
+	   });
+
+      test("addSelf", function() {
+	      expect(2);
+	      var data = aQuery("data[data]");
+	      equals(data.children().andSelf().length, 9, "andSelf");
+	      equals(data.children("data[@name = 'copyright-status']").andSelf().length, 2, "andSelf");
+	   });
 
       // Destroy test environment
       document.close();

@@ -184,6 +184,9 @@ var _$ = function(document) {
       // Start with an empty selector
       selector: "",
 
+      // Current version of aQuery being used
+      aquery: "0.3",
+
       // The default length of an aQuery object is 0
       length: 0,
 
@@ -269,7 +272,7 @@ var _$ = function(document) {
       },
 
       end: function() {
-	 return this.prevObject || jQuery(null);
+	 return this.prevObject || aQuery(null);
       },
 
       push: push,
@@ -513,7 +516,20 @@ var _$ = function(document) {
 	 return ret;
       },
 
-      // MISSING: inArray
+      inArray: function( elem, array ) {
+	 if ( !elem.nodeType && array.indexOf ) {
+	    return array.indexOf( elem );
+	 }
+
+	 for ( var i = 0, length = array.length; i < length; i++ ) {
+	    if ( ( array[ i ].nodeType && array[ i ].equals( elem ) ) || ( array[ i ] === elem ) ) {
+	       return i;
+	    }
+	 }
+
+	 return -1;
+      },
+
 
       merge: function ( first, second ) {
 	 var i = first.length,
@@ -542,10 +558,21 @@ var _$ = function(document) {
 	 return first;
       },
 
+      grep: function( elems, callback, inv ) {
+	 var ret = [], retVal;
+	 inv = !!inv;
 
-      // MISSING: grep
-      // No tests in jQuery.  Remember to handle DOM equality differently.
+	 // Go through the array, only saving the items
+	 // that pass the validator function
+	 for ( var i = 0, length = elems.length; i < length; i++ ) {
+	    retVal = !!callback( elems[ i ], i );
+	       if ( inv !== retVal ) {
+		  ret.push( elems[ i ] );
+	       }
+	 }
 
+	 return ret;
+      },
 
       // arg is for internal usage only
       map: function( elems, callback, arg ) {
@@ -733,12 +760,107 @@ var _$ = function(document) {
 
    aQuery.fn.extend({
 
+      find: function( selector ) {
+	 var ret = this.pushStack( "", "find", selector ),
+ 	     length = 0;
 
-      	is: function( selector ) {
-		return !!selector && aQuery.filter( selector, this ).length > 0;
-	}
+	 for ( var i = 0, l = this.length; i < l; i++ ) {
+	    length = ret.length;
+	    aQuery.find( selector, this[i], ret );
+
+	    if ( i > 0 ) {
+	       // Make sure that the results are unique
+	       for ( var n = length; n < ret.length; n++ ) {
+		  for ( var r = 0; r < length; r++ ) {
+		     if ( ret[r] === ret[n] ) {
+			ret.splice(n--, 1);
+			break;
+		     }
+		  }
+	       }
+	    }
+	 }
+
+	 return ret;
+      },
+
+      has: function( target ) {
+	 var targets = aQuery( target );
+	 return this.filter(function() {
+	    for ( var i = 0, l = targets.length; i < l; i++ ) {
+	       if ( aQuery.contains( this, targets[i] ) ) {
+		  return true;
+	       }
+	    }
+	 });
+      },
+
+      not: function ( selector ) {
+	 return this.pushStack( winnow(this, selector, false), "not", selector);
+      },
+
+      filter: function ( selector ) {
+	 return this.pushStack( winnow(this, selector, true), "filter", selector);
+      },
+
+      is: function( selector ) {
+	 return !!selector && aQuery.filter( selector, this ).length > 0;
+      },
+
+      // Determine the position of an element within
+      // the matched set of elements
+      index: function( elem ) {
+	 if ( !elem || typeof elem === "string" ) {
+	    return aQuery.inArray( this[0],
+	    // If it receives a string, the selector is used
+            // If it receives nothing, the siblings are used
+	    elem ? aQuery( elem ) : this.parent().children() );
+	 }
+	 // Locate the position of the desired element
+	 return aQuery.inArray(
+	    // If it receives a aQuery object, the first element is used
+	    elem.aquery ? elem[0] : elem, this );
+      },
+
+      add: function( selector, context ) {
+	 var set = typeof selector === "string" ?
+		      aQuery( selector, context || this.context ) :
+		      aQuery.makeArray( selector ),
+	    all = aQuery.merge( this.get(), set );
+
+	 return this.pushStack( isDisconnected( set[0] ) || isDisconnected( all[0] ) ?
+				all :
+				aQuery.unique( all ) );
+      },
+
+      andSelf: function() {
+	 return this.add( this.prevObject );
+      }
+
+
    });
 
+   // A painfully simple check to see if an element is disconnected
+   // from a document (should be improved, where feasible).
+   function isDisconnected( node ) {
+	return !node || !node.parentNode || node.parentNode.nodeType === 11;
+   }
+
+
+   aQuery.extend({
+      // In jQuery, this is a Sizzle method that relies on the DOM
+      // method .contains(), which doesn't exist in Arbortext.
+      contains: function ( container, contained ) {
+	 var parent = contained.parentNode;
+	 while (parent) {
+	    if (parent.equals(container)) {
+	       return true;
+	    }
+	    parent = parent.parentNode;
+	 }
+	 return false;
+      }
+   });
 
    aQuery.each({
 	parent: function( elem ) {
@@ -917,6 +1039,37 @@ var _$ = function(document) {
 	 return attr === null ? undefined : attr;
       }
    });
+
+
+   // Implement the identical functionality for filter and not
+   function winnow( elements, qualifier, keep ) {
+      if ( aQuery.isFunction( qualifier ) ) {
+	 return aQuery.grep(elements, function( elem, i ) {
+			       var retVal = !!qualifier.call( elem, i, elem );
+			       return retVal === keep;
+			    });
+
+      } else if ( qualifier.nodeType ) {
+	 return aQuery.grep(elements, function( elem, i ) {
+			       return (qualifier.equals(elem)) === keep;
+			    });
+
+      } else if ( typeof qualifier === "string" ) {
+	 var filtered = aQuery.grep(elements, function( elem ) {
+				       return elem.nodeType === 1;
+				    });
+
+	// if ( isSimple.test( qualifier ) ) {
+	//    return aQuery.filter(qualifier, filtered, !keep);
+	// } else {
+	 qualifier = aQuery.filter( qualifier, filtered );
+	// }
+      }
+
+      return aQuery.grep(elements, function( elem, i ) {
+			    return (aQuery.inArray( elem, qualifier ) >= 0) === keep;
+			 });
+   }
 
 
 
