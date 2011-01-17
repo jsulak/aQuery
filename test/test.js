@@ -625,7 +625,7 @@ var aQueryTests = function() {
       	      ok( !aQuery('#foo').is(''), 'Expected false for an invalid expression - ""' );
       	      ok( !aQuery('#foo').is(undefined), 'Expected false for an invalid expression - undefined' );
 
-	   });
+      	   });
 
       test("Children", function() {
       	      expect(2);
@@ -775,6 +775,22 @@ var aQueryTests = function() {
       	      equals(data.children().andSelf().length, 9, "andSelf");
       	      equals(data.children("data[@name = 'copyright-status']").andSelf().length, 2, "andSelf");
       	   });
+
+      test("find()", function() {
+	      var data = aQuery("data[data]");
+	      equals(data.find("data").length, 8, "Find - simple element, one level");
+	      equals(aQuery("/topic").find("data").length, 9, "Find - simple element, deep");
+	      same(["etext-no.", "release-date", "loc-class", "subject", "base-directory", "language", "creator", "copyright-status"],
+     		   aQuery("/topic").find("data/data").map(function() { return aQuery(this).attr("name"); }).get(),
+		   "Find - xpath, deep");
+	      equals(aQuery("topic").find("title").length, 11, "Find - deep, multiple source elements");
+
+	      // TODO:  Is this the proper behavior?
+	      equals(aQuery("/topic").find("topic/title").length, 1, "Find - deep, xpath");
+	      equals(aQuery("data").find("topic").length, 0, "Find - none expected");
+	      equals(aQuery("data").find("topic/title").length, 0, "Find - xpath, none expected");
+	   });
+
 
       // Destroy test environment
       document.close();

@@ -772,7 +772,7 @@ var _$ = function(document) {
 	       // Make sure that the results are unique
 	       for ( var n = length; n < ret.length; n++ ) {
 		  for ( var r = 0; r < length; r++ ) {
-		     if ( ret[r] === ret[n] ) {
+		     if ( ret[r].equals(ret[n]) ) {
 			ret.splice(n--, 1);
 			break;
 		     }
@@ -1104,23 +1104,21 @@ var _$ = function(document) {
 
       // If it is a valid xpath expression, then do that
       else if (Acl.func("xpath_valid", selector)) {
-	 // TODO: Allow this to work with a context
-
-	 var xpath = fullXPath.test ( selector ) ?
-	    selector :
-	    "//" + selector;
-
 	 var oidNodesString;
 
 	 // If we have a context element, then use it
 	 if (context.nodeType === 1) {
 	    oidNodesString = Acl.func("aquery_utils::get_xpath_oids",
 				      context.getFirstOID(),
-				      xpath);
+				      fullXPath.test(selector) ?
+					 selector :
+					 ".//" + selector);
 	 } else {
 	    oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
-				      xpath,
-				      context.getAclId());
+				      fullXPath.test(selector) ?
+					 selector :
+					 "//" + selector,
+				      document.getAclId());
 	 }
 
 	 var oids = oidNodesString.split("-");
