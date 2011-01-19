@@ -280,14 +280,14 @@ var _$ = function(document) {
       splice: [].splice,
 
       remove: function() {
-	    this.forEach(function(elem) {
+	    this.each(function() {
 			 var parent = elem.getParentNode();
-			 parent.removeChild(elem);
+			 parent.removeChild(this);
 		      });
       },
 
       // Gets or sets the content of an element
-      text : function(text) {
+      text: function(text) {
 	 if (text != null && text != "") {
 	    for (var i = 0; i < this.length; i++) {
 	       var elem = this[i];
@@ -1106,6 +1106,21 @@ var _$ = function(document) {
 			    return (aQuery.inArray( elem, qualifier ) >= 0) === keep;
 			 });
    }
+
+
+   // aQuery.fn.extent({
+   //    // NOTE: check frameworkUtils.insertNodeContents, etc., to see how to parse XML markup
+
+   //    append: function() {
+   // 	 return this.domManip(arguments, true, function( elem ) {
+   // 	    if ( this.nodeType === 1 ) {
+   // 	       this.appendChild( elem );
+   // 	    }
+   // 	 });
+   //    }
+
+   // });
+
 
    // Simmer is an XPath version of the Sizzle selector engine.
    var Simmer = function( selector, context, results, seed ) {
