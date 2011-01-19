@@ -807,6 +807,67 @@ var _$ = function(document) {
 	 return !!selector && aQuery.filter( selector, this ).length > 0;
       },
 
+      closest: function( selectors, context ) {
+	 var ret = [], i, l, cur = this[0];
+
+	 if ( aQuery.isArray( selectors ) ) {
+	    var match, selector,
+	    matches = {},
+	    level = 1;
+
+	    if ( cur && selectors.length ) {
+	       for ( i = 0, l = selectors.length; i < l; i++ ) {
+		  selector = selectors[i];
+
+		  if ( !matches[selector] ) {
+		     matches[selector] = aQuery.expr.match.POS.test( selector ) ?
+			aQuery( selector, context || this.context ) :
+			selector;
+		  }
+	       }
+
+	       while ( cur && cur.ownerDocument && cur !== context ) {
+		  for ( selector in matches ) {
+		     match = matches[selector];
+
+		     if ( match.aquery ? match.index(cur) > -1 : aQuery(cur).is(match) ) {
+			ret.push({ selector: selector, elem: cur, level: level });
+		     }
+		  }
+
+		  cur = cur.parentNode;
+		  level++;
+	       }
+	    }
+
+	    return ret;
+	 }
+
+	 // TODO: I took out pos for now
+
+	 for ( i = 0, l = this.length; i < l; i++ ) {
+	    cur = this[i];
+
+	    while ( cur ) {
+	       // TODO:  I took out pos for now.
+	       if ( aQuery.find.matchesSelector(cur, selectors) ) {
+		  ret.push( cur );
+		  break;
+	       } else {
+		  cur = cur.parentNode;
+		  if ( !cur || !cur.ownerDocument || cur === context ) {
+		     break;
+		  }
+	       }
+	    }
+	 }
+
+	 ret = ret.length > 1 ? aQuery.unique(ret) : ret;
+
+	 return this.pushStack( ret, "closest", selectors );
+      },
+
+
       // Determine the position of an element within
       // the matched set of elements
       index: function( elem ) {
@@ -926,36 +987,6 @@ var _$ = function(document) {
 
    aQuery.extend({
 	filter: function( expr, elems, not ) {
-	   // TODO: enable not
-	   //if ( not ) {
-	   //   expr = ":not(" + expr + ")";
-	   //}
-
-	   // TODO: This might be able to be optimized by evaluating the xpath from
-           // the context of each element instead of the entire document.
-	   // TODO: This only works for xpath selectors, not element or id selectors
-
-	   // var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
-	   // 				 fullXPath.test ( expr ) ?
-	   // 					expr :
-	   // 					"//" + expr,
-	   // 				 document.getAclId());
-	   // var newOids = new String(oidNodesString).split("-");
-	   // var oldOids = aQuery.map(elems, function(e) { return new String(e.getFirstOID()); } );
-	   // var filteredOids = [];
-
-	   // // TODO: I'm not sure why the built-in indexOf array method doesn't work.
-	   // for (var i = 0; i < oldOids.length; i++) {
-	   //    for (var j = 0; j < newOids.length; j++) {
-	   // 	 if (oldOids[i] == newOids[j]) {
-	   // 	    filteredOids.push(oldOids[i]);
-	   // 	    break;
-	   // 	 }
-	   //    }
-	   // }
-
-	   //return aQuery.map(filteredOids, function(e) { return Acl.getDOMOID(e); } );
-
 	   return elems.length === 1 ?
 	      aQuery.find.matchesSelector(elems[0], expr) ? [ elems[0] ] : [] :
 	      aQuery.find.matches(expr, elems);

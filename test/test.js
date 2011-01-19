@@ -589,14 +589,16 @@ var aQueryTests = function() {
 
 
       test("Parent & Parents", function() {
-      	      expect(4);
+      	      expect(6);
       	      var titleParents = aQuery("title").parent();
       	      var attr = titleParents.attr("id");
       	      equals(attr, "topic-1");
-
       	      equals(aQuery("p").first().parents().length, 2);
       	      equals(aQuery("p").parents().length, 10);
       	      equals(aQuery("p").parent().length, 8);
+	      equals(aQuery("p").parents("topic").length, 2);
+	      equals(aQuery("title").parents("topic[title]").length, 2);
+
       	   });
 
       test("Next & Prev", function() {
@@ -628,9 +630,10 @@ var aQueryTests = function() {
       	   });
 
       test("Children", function() {
-      	      expect(2);
+      	      expect(3);
       	      equals(aQuery("data").first().children().length, 8, "Simple children");
       	      equals(aQuery("data").children("data").length, 8, "Filtered children of multiple elements");
+	      equals(aQuery("data").first().children("data[@name = 'base-directory']").length, 1, "Filter children with xpath");
       	   });
 
       test("Attributes", function() {
@@ -789,6 +792,20 @@ var aQueryTests = function() {
 	      equals(aQuery("/topic").find("topic/title").length, 1, "Find - deep, xpath");
 	      equals(aQuery("data").find("topic").length, 0, "Find - none expected");
 	      equals(aQuery("data").find("topic/title").length, 0, "Find - xpath, none expected");
+	      equals(aQuery("/topic").find("#notes-on-the-wasteland").length, 1, "Find - id");
+
+	   });
+
+      test("closest()", function() {
+	      var data = aQuery("data/data");
+	      equals(data.closest("data").attr("name"), "etext-no.");
+	      equals("" + data.closest("prolog")[0].getTagName(), "prolog");
+	      equals(aQuery("i").first().closest("topic/body").length, 1);
+
+	      // TODO: Context
+
+	      // TODO: Array of contexts
+
 	   });
 
 
