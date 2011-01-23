@@ -20,8 +20,8 @@ value="Not copyrighted in the United States. If you live
 <body>
 <p>T. S. Eliot</p>
 <p><q><i>Nam Sibyllam quidem Cumis ego ipse oculis meis vidi in ampulla
-pendere, et cum illi           pueri dicerent: Sibylla ti theleis;
-respondebat illa: apothanein thelo.﻿</i></q></p>
+pendere, et cu<?Pub Caret?>m illi           pueri dicerent: Sibylla
+ti theleis; respondebat illa: apothanein thelo.﻿</i></q></p>
 <section>       <title>I. The Burial of the Dead</title>       <lines
 outputclass="stanza">
 April is the cruellest month, breeding 
@@ -513,7 +513,7 @@ Datta. Dayadhvam. Damyata.
 ></ph>shantih <ph outputclass="indent"></ph>shantih 
   </lines>     </section>
 </body>
-<topic id="notes-on-the-wasteland" outputclass="appendix"><?Pub Caret?>
+<topic id="notes-on-the-wasteland" outputclass="appendix">
 <title>Notes on <i>The Waste Land</i></title>
 <body>
 <p> Not only the title, but the plan and a good deal of the incidental

@@ -596,8 +596,8 @@ var aQueryTests = function() {
       	      equals(aQuery("p").first().parents().length, 2);
       	      equals(aQuery("p").parents().length, 10);
       	      equals(aQuery("p").parent().length, 8);
-	      equals(aQuery("p").parents("topic").length, 2);
-	      equals(aQuery("title").parents("topic[title]").length, 2);
+      	      equals(aQuery("p").parents("topic").length, 2);
+      	      equals(aQuery("title").parents("topic[title]").length, 2);
 
       	   });
 
@@ -633,7 +633,7 @@ var aQueryTests = function() {
       	      expect(3);
       	      equals(aQuery("data").first().children().length, 8, "Simple children");
       	      equals(aQuery("data").children("data").length, 8, "Filtered children of multiple elements");
-	      equals(aQuery("data").first().children("data[@name = 'base-directory']").length, 1, "Filter children with xpath");
+      	      equals(aQuery("data").first().children("data[@name = 'base-directory']").length, 1, "Filter children with xpath");
       	   });
 
       test("Attributes", function() {
@@ -780,33 +780,99 @@ var aQueryTests = function() {
       	   });
 
       test("find()", function() {
-	      var data = aQuery("data[data]");
-	      equals(data.find("data").length, 8, "Find - simple element, one level");
-	      equals(aQuery("/topic").find("data").length, 9, "Find - simple element, deep");
-	      same(["etext-no.", "release-date", "loc-class", "subject", "base-directory", "language", "creator", "copyright-status"],
-     		   aQuery("/topic").find("data/data").map(function() { return aQuery(this).attr("name"); }).get(),
-		   "Find - xpath, deep");
-	      equals(aQuery("topic").find("title").length, 11, "Find - deep, multiple source elements");
+      	      var data = aQuery("data[data]");
+      	      equals(data.find("data").length, 8, "Find - simple element, one level");
+      	      equals(aQuery("/topic").find("data").length, 9, "Find - simple element, deep");
+      	      same(["etext-no.", "release-date", "loc-class", "subject", "base-directory", "language", "creator", "copyright-status"],
+      		   aQuery("/topic").find("data/data").map(function() { return aQuery(this).attr("name"); }).get(),
+      		   "Find - xpath, deep");
+      	      equals(aQuery("topic").find("title").length, 11, "Find - deep, multiple source elements");
 
-	      // TODO:  Is this the proper behavior?
-	      equals(aQuery("/topic").find("topic/title").length, 1, "Find - deep, xpath");
-	      equals(aQuery("data").find("topic").length, 0, "Find - none expected");
-	      equals(aQuery("data").find("topic/title").length, 0, "Find - xpath, none expected");
-	      equals(aQuery("/topic").find("#notes-on-the-wasteland").length, 1, "Find - id");
+      	      // TODO:  Is this the proper behavior?
+      	      equals(aQuery("/topic").find("topic/title").length, 1, "Find - deep, xpath");
+      	      equals(aQuery("data").find("topic").length, 0, "Find - none expected");
+      	      equals(aQuery("data").find("topic/title").length, 0, "Find - xpath, none expected");
+      	      equals(aQuery("/topic").find("#notes-on-the-wasteland").length, 1, "Find - id");
 
-	   });
+      	   });
 
       test("closest()", function() {
-	      var data = aQuery("data/data");
-	      equals(data.closest("data").attr("name"), "etext-no.");
-	      equals("" + data.closest("prolog")[0].getTagName(), "prolog");
-	      equals(aQuery("i").first().closest("topic/body").length, 1);
+      	      var data = aQuery("data/data");
+      	      equals(data.closest("data").attr("name"), "etext-no.");
+      	      equals("" + data.closest("prolog")[0].getTagName(), "prolog");
+      	      equals(aQuery("i").first().closest("topic/body").length, 1);
 
-	      // TODO: Context
+      	      // TODO: Context
 
-	      // TODO: Array of contexts
 
-	   });
+      	      // TODO: Array of contexts
+
+      	   });
+
+
+      test("append()", function() {
+	      expect(4);
+
+	      // Append plain text
+	      var p = aQuery("p").first();
+	      equals(p.append("hello").text().substr(-5), "hello", "Append plain text");
+
+	      // Append a dom node
+	      var n = document.createElement("b");
+	      equals(p.append(n).children("b").length, 1, "Append DOM element");
+
+	      // Append a jquery object
+	      equals(p.append(aQuery(document.createElement("b")))
+		      .children("b").length, 2, "Append aQuery object");
+
+	      // Append using a function
+	      equals(p.append(function() { return document.createElement("i"); })
+		      .children("i").length, 1, "Append DOM element using function");
+	 });
+
+
+      test("prepend()", function() {
+      	      expect(4);
+
+      	      var p = aQuery("p").eq(1);
+      	      equals(p.prepend("hello").text().substr(0, 5), "hello", "Append plain text");
+      	      var n = document.createElement("b");
+      	      equals(p.prepend(n).children("b").length, 1, "Append DOM element");
+      	      equals(p.prepend(aQuery(document.createElement("b")))
+      		      .children("b").length, 2, "Prepend aQuery object");
+      	      equals(p.prepend(function() { return document.createElement("b"); })
+      		      .children("b").length, 3, "Append DOM element using function");
+      	 });
+
+      test("before()", function() {
+      	      var p = aQuery("p").first();
+      	      var note = document.createElement("note");
+      	      p.before(note);
+      	      equals(p.prevAll("note").length, 1, "Add DOM element");
+
+	      var n = aQuery(document.createElement("note"));
+	      p.before(n);
+     	      equals(p.prevAll("note").length, 2, "Add aQuery object");
+
+	      equals(p.before(function() { return document.createElement("note"); })
+		      .prevAll("note").length, 3, "Add DOM element using function");
+
+      	      });
+
+      test("after()", function() {
+      	      var p = aQuery("p").first();
+      	      var note = document.createElement("note");
+      	      p.after(note);
+      	      equals(p.nextAll("note").length, 1, "Add DOM element");
+
+	      var n = aQuery(document.createElement("note"));
+	      p.after(n);
+     	      equals(p.nextAll("note").length, 2, "Add aQuery object");
+
+	      equals(p.after(function() { return document.createElement("note"); })
+		      .nextAll("note").length, 3, "Add DOM element using function");
+
+      	   });
 
 
       // Destroy test environment

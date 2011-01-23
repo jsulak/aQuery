@@ -44,7 +44,7 @@
 
 
 // Source the aquery utils
-Acl.execute("source aquery_utils.acl");
+//Acl.execute("source aquery_utils.acl");
 
 
 var _$ = function(document) {
@@ -108,7 +108,7 @@ var _$ = function(document) {
 
    aQuery.fn = aQuery.prototype = {
 
-      init : function(selector, context) {
+      init: function(selector, context) {
 	 var elem;
 
 	 // Handle $(""), $(null), or $(undefined)
@@ -279,13 +279,6 @@ var _$ = function(document) {
       sort: [].sort,
       splice: [].splice,
 
-      remove: function() {
-	    this.each(function() {
-			 var parent = elem.getParentNode();
-			 parent.removeChild(this);
-		      });
-      },
-
       // Gets or sets the content of an element
       text: function(text) {
 	 if (text != null && text != "") {
@@ -451,6 +444,9 @@ var _$ = function(document) {
       noop: function() {},
 
       // MISSING: globalEval, nodeName
+      nodeName: function( elem, name ) {
+	 return elem.nodeName && elem.nodeName.toUpperCase() === name.toUpperCase();
+      },
 
       // args is for internal usage only
       each: function( object, callback, args ) {
@@ -1108,18 +1104,268 @@ var _$ = function(document) {
    }
 
 
-   // aQuery.fn.extent({
-   //    // NOTE: check frameworkUtils.insertNodeContents, etc., to see how to parse XML markup
+   aQuery.buildFragment = function( args, nodes, scripts ) {
+      var fragment, cacheable, cacheresults,
+          doc = (nodes && nodes[0] ? nodes[0].ownerDocument || nodes[0] : document);
 
-   //    append: function() {
-   // 	 return this.domManip(arguments, true, function( elem ) {
-   // 	    if ( this.nodeType === 1 ) {
-   // 	       this.appendChild( elem );
-   // 	    }
-   // 	 });
-   //    }
+      if (args.length === 1 && typeof args[0] === "string" && args[0].length < 512 && doc == document) {
+	 cacheable = true;
+      }
 
-   // });
+      cacheresults = aQuery.fragments[ args[0] ];
+      if ( cacheresults ) {
+	 if ( cacheresults !== 1 ) {
+	    fragment = cacheresults;
+	 }
+      }
+
+      if ( !fragment ) {
+	 fragment = doc.createDocumentFragment();
+	 aQuery.clean( args, doc, fragment, scripts );
+      }
+
+      if ( cacheable ) {
+	 aQuery.fragments[ args[0] ] = cacheresults ? fragment : 1;
+      }
+
+      return { fragment: fragment, cacheable: cacheable };
+   };
+
+   aQuery.fragments = {};
+
+
+   var rhtml = /<|&#?\w+;/;
+
+   aQuery.extend({
+      clean: function( elems, context, fragment, scripts ) {
+	 context = context || document;
+
+	 // !context.createElement fails in IE with an error but returns typeof 'object'
+	 if ( typeof context.createElement === "undefined" ) {
+	    context = context.ownerDocument || context[0] && context[0].ownerDocument || document;
+	 }
+
+	 var ret = [];
+
+	 for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
+	    if ( typeof elem === "number" ) {
+	       elem += "";
+	    }
+
+	    // Convert html string into DOM nodes
+	    if ( typeof elem === "string" && !rhtml.test( elem ) ) {
+	       elem = context.createTextNode( elem );
+
+	    } else if ( typeof elem === "string" ) {
+	       // TODO: Removed most of the logic.  Intend to replace with
+	       // built-in Arbortext functionality
+
+	       var d = Application.openDocument(null, 0x0100 + 0x10000 + 0x80000);
+	       var r = d.createRange();
+	       r.insertParsedString(elem);
+	       elem = r.extractContents();
+	       d.close();
+
+	       //var div = context.createElement("div");
+	       //var insertRange = context.createRange();
+	       //insertRange.selectNodeContents(div);
+	       //insertRange.insertParsedString(elem);
+	       //insertRange.detach();
+	    }
+
+	    if ( elem.nodeType ) {
+	       ret.push( elem );
+	    } else {
+	       ret = aQuery.merge( ret, elem );
+	    }
+	 }
+
+	 if ( fragment ) {
+	    for ( i = 0; ret[i]; i++ ) {
+	       if ( scripts && aQuery.nodeName( ret[i], "script" ) && (!ret[i].type || ret[i].type.toLowerCase() === "text/javascript") ) {
+		  scripts.push( ret[i].parentNode ? ret[i].parentNode.removeChild( ret[i] ) : ret[i] );
+
+	       } else {
+		  if ( ret[i].nodeType === 1 ) {
+		     ret.splice.apply( ret, [i + 1, 0].concat(aQuery.makeArray(ret[i].getElementsByTagName("script"))) );
+		  }
+		  fragment.appendChild( ret[i] );
+	       }
+	    }
+	 }
+
+	 return ret;
+      }
+   });
+
+
+   aQuery.fn.extend({
+      // NOTE: check frameworkUtils.insertNodeContents, etc., to see how to parse XML markup
+
+      append: function() {
+   	 return this.domManip(arguments, true, function( elem ) {
+   	    if ( this.nodeType === 1 ) {
+   	       this.appendChild( elem );
+   	    }
+   	 });
+      },
+
+      prepend: function() {
+	 return this.domManip(arguments, true, function( elem ) {
+	    if ( this.nodeType === 1 ) {
+	       this.insertBefore( elem, this.firstChild );
+	    }
+	 });
+      },
+
+      before: function() {
+	 if ( this[0] && this[0].parentNode ) {
+	    return this.domManip(arguments, false, function( elem ) {
+				    this.parentNode.insertBefore( elem, this );
+				 });
+	 } else if ( arguments.length ) {
+	    var set = aQuery(arguments[0]);
+	    set.push.apply( set, this.toArray() );
+	    return this.pushStack( set, "before", arguments );
+	 }
+      },
+
+      after: function() {
+	 if ( this[0] && this[0].parentNode ) {
+	    return this.domManip(arguments, false, function( elem ) {
+				    this.parentNode.insertBefore( elem, this.nextSibling );
+				 });
+	 } else if ( arguments.length ) {
+	    var set = this.pushStack( this, "after", arguments );
+	    set.push.apply( set, aQuery(arguments[0]).toArray() );
+	    return set;
+	 }
+      },
+
+      // TODO: Reimplement this like jquery, to detach events.
+      remove: function() {
+	    this.each(function() {
+			 var parent = this.getParentNode();
+			 parent.removeChild(this);
+		      });
+      },
+
+      empty: function() {
+	 for ( var i = 0, elem; (elem = this[i]) != null; i++ ) {
+	    // Remove element nodes and prevent memory leaks
+	    if ( elem.nodeType === 1 ) {
+	       aQuery.cleanData( elem.getElementsByTagName("*") );
+	    }
+
+	    // Remove any remaining nodes
+	    while ( elem.firstChild ) {
+	    elem.removeChild( elem.firstChild );
+	    }
+	 }
+
+	 return this;
+      },
+
+
+      domManip: function( args, table, callback ) {
+	 var results, first, fragment, parent,
+	     value = args[0],
+	     scripts = [];
+
+	 // If the argument is a function, then execute it.
+	 if ( aQuery.isFunction(value) ) {
+	    return this.each(function(i) {
+	       var self = aQuery(this);
+		  // TODO: Removed table .html() call
+		  args[0] = value.call(this, i, table);
+		     self.domManip( args, table, callback );
+		  });
+	 }
+
+	 // Otherwise, if there are any elements in the current jquery object, then handle
+	 if ( this[0] ) {
+	    parent = value && value.parentNode;
+
+	    // If we're in a fragment, just use that instead of building a new one
+	    if ( parent && parent.nodeType === 11 && parent.childNodes.length === this.length ) {
+	       results = { fragment: parent };
+
+	    } else {
+	       results = aQuery.buildFragment( args, this, scripts );
+	    }
+
+	    fragment = results.fragment;
+
+	    if ( fragment.childNodes.length === 1 ) {
+	       first = fragment = fragment.firstChild;
+	    } else {
+	       first = fragment.firstChild;
+	    }
+
+	    if ( first ) {
+	       table = table && aQuery.nodeName( first, "tr" );
+
+	       for ( var i = 0, l = this.length; i < l; i++ ) {
+		  callback.call(
+		     table ?
+			root(this[i], first) :
+			this[i],
+			i > 0 || results.cacheable || this.length > 1  ?
+			fragment.cloneNode(true) :
+			fragment
+		  );
+	       }
+	    }
+
+	    if ( scripts.length ) {
+	       aQuery.each( scripts, evalScript );
+	    }
+	 }
+
+	 return this;
+      }
+   });
+
+
+   aQuery.extend({
+      cleanData: function( elems ) {
+	 var data, id, cache = aQuery.cache,
+	 special = aQuery.event.special,
+	 deleteExpando = aQuery.support.deleteExpando;
+
+	 for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
+	    if ( elem.nodeName && aQuery.noData[elem.nodeName.toLowerCase()] ) {
+	       continue;
+	    }
+
+	    id = elem[ aQuery.expando ];
+
+	    if ( id ) {
+	       data = cache[ id ];
+
+	       if ( data && data.events ) {
+		  for ( var type in data.events ) {
+		     if ( special[ type ] ) {
+			aQuery.event.remove( elem, type );
+
+		     } else {
+			aQuery.removeEvent( elem, type, data.handle );
+		     }
+		  }
+	       }
+
+	       if ( deleteExpando ) {
+		  delete elem[ aQuery.expando ];
+
+	       } else if ( elem.removeAttribute ) {
+		  elem.removeAttribute( aQuery.expando );
+	       }
+
+	       delete cache[ id ];
+	    }
+	 }
+      }
+   });
 
 
    // Simmer is an XPath version of the Sizzle selector engine.
