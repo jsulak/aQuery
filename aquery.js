@@ -1140,22 +1140,20 @@ var _$ = function(document) {
 	    // Convert html string into DOM nodes
 	    if ( typeof elem === "string" && !rhtml.test( elem ) ) {
 	       elem = context.createTextNode( elem );
-
 	    } else if ( typeof elem === "string" ) {
-	       // TODO: Removed most of the logic.  Intend to replace with
-	       // built-in Arbortext functionality
-
-	       var d = Application.openDocument(null, 0x0100 + 0x10000 + 0x80000);
-	       var r = d.createRange();
-	       r.insertParsedString(elem);
-	       elem = r.extractContents();
-	       d.close();
-
-	       //var div = context.createElement("div");
-	       //var insertRange = context.createRange();
-	       //insertRange.selectNodeContents(div);
-	       //insertRange.insertParsedString(elem);
-	       //insertRange.detach();
+	       var insertRange = context.createRange();
+	       insertRange.setStart(fragment, 0);
+	       insertRange.setEnd(fragment, 0);
+	       try {
+		  insertRange.insertParsedString(elem);
+	       } catch (e) {
+		  // This try/catch is a kludge to make this work in 5.3,
+		  // where it always throws an exception.
+		  if (e.message.indexOf("[A11149]") == -1) {
+		     throw e;
+		  }
+	       }
+	       elem = fragment.childNodes;
 	    }
 
 	    if ( elem.nodeType ) {

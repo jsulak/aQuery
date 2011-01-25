@@ -811,7 +811,7 @@ var aQueryTests = function() {
 
 
       test("append()", function() {
-      	      expect(4);
+      	      expect(6);
 
       	      // Append plain text
       	      var p = aQuery("p").first();
@@ -828,11 +828,16 @@ var aQueryTests = function() {
       	      // Append using a function
       	      equals(p.append(function() { return document.createElement("i"); })
       		      .children("i").length, 1, "Append DOM element using function");
+
+	      // Append using a string
+	      equals(p.append("<b>howdy</b>")
+		      .children("b").length, 3, "Append markup string");
+	      equals(p.text().substr(-5) , "howdy", "Append markup string");
       	 });
 
 
       test("prepend()", function() {
-      	      expect(4);
+      	      expect(6);
 
       	      var p = aQuery("p").eq(1);
       	      equals(p.prepend("hello").text().substr(0, 5), "hello", "Append plain text");
@@ -842,10 +847,15 @@ var aQueryTests = function() {
       		      .children("b").length, 2, "Prepend aQuery object");
       	      equals(p.prepend(function() { return document.createElement("b"); })
       		      .children("b").length, 3, "Append DOM element using function");
+
+	      equals(p.prepend("<b>howdy</b>")
+		      .children("b").length, 4, "Append a markup string");
+	      equals(p.text().substr(0, 5), "howdy", "Append a markup string");
       	 });
 
       test("before()", function() {
-      	      var p = aQuery("p").first();
+	      expect(4);
+	      var p = aQuery("p").first();
       	      var note = document.createElement("note");
       	      p.before(note);
       	      equals(p.prevAll("note").length, 1, "Add DOM element");
@@ -857,9 +867,14 @@ var aQueryTests = function() {
       	      equals(p.before(function() { return document.createElement("note"); })
       		      .prevAll("note").length, 3, "Add DOM element using function");
 
-      	      });
+	      p.before("<note />");
+	      equals(p.prevAll("note").length, 4, "Add markup string");
+
+	   });
 
       test("after()", function() {
+	      expect(4);
+
       	      var p = aQuery("p").first();
       	      var note = document.createElement("note");
       	      p.after(note);
@@ -872,8 +887,10 @@ var aQueryTests = function() {
       	      equals(p.after(function() { return document.createElement("note"); })
       		      .nextAll("note").length, 3, "Add DOM element using function");
 
-      	      aQuery("note").remove();
+	      p.after("<note />");
+	      equals(p.nextAll("note").length, 4, "Add markup string");
 
+      	      aQuery("note").remove();
       	   });
 
 
@@ -890,10 +907,11 @@ var aQueryTests = function() {
       	      p.before(document.createElement("note"));
       	      aQuery("*").remove("note");
       	      equals(aQuery("*").length, beforeCount, "Remove items using a selector");
-
       	   });
 
       test("empty()", function() {
+	      expect(4);
+
 	      var p = aQuery("p").eq(1);
 	      var cloned = p.clone();
 	      cloned.empty();
@@ -904,10 +922,11 @@ var aQueryTests = function() {
 	      var count = s.children().length;
 	      equals(s.children().empty().text().length, 0, "Check text is removed");
 	      equals(s.children().length, count, "Check elements are not removed");
-
 	   });
 
       test("clone()", function() {
+	      expect(2);
+
 	      var p = aQuery("p").eq(1);
 	      var cloned = p.clone();
 	      ok(cloned.text().indexOf("Sibyllam") > -1, "Node is cloned");
@@ -917,6 +936,8 @@ var aQueryTests = function() {
 	   });
 
       test("replaceWith()", function() {
+	      expect(7);
+
 	      var aClone = aQuery("author").clone();
 	      aQuery("author").replaceWith(document.createElement("publisher"));
 	      equals(aQuery("author").length, 0, "tag removed");
@@ -927,6 +948,11 @@ var aQueryTests = function() {
 	      equals(aQuery("publisher").length, 0, "tag removed");
 	      equals(aQuery("author").length, 1, "aQuery object inserted");
 
+	      aQuery("author").replaceWith("<publisher />");
+	      equals(aQuery("publisher").length, 1, "new tag inserted");
+	      equals("" + aQuery("prolog").first().children().first()[0].tagName, "publisher", "Tag inserted into correct position");
+
+	      aQuery("publisher").replaceWith(aClone);
 	   });
 
       // Destroy test environment
