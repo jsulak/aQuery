@@ -811,24 +811,24 @@ var aQueryTests = function() {
 
 
       test("append()", function() {
-	      expect(4);
+      	      expect(4);
 
-	      // Append plain text
-	      var p = aQuery("p").first();
-	      equals(p.append("hello").text().substr(-5), "hello", "Append plain text");
+      	      // Append plain text
+      	      var p = aQuery("p").first();
+      	      equals(p.append("hello").text().substr(-5), "hello", "Append plain text");
 
-	      // Append a dom node
-	      var n = document.createElement("b");
-	      equals(p.append(n).children("b").length, 1, "Append DOM element");
+      	      // Append a dom node
+      	      var n = document.createElement("b");
+      	      equals(p.append(n).children("b").length, 1, "Append DOM element");
 
-	      // Append a jquery object
-	      equals(p.append(aQuery(document.createElement("b")))
-		      .children("b").length, 2, "Append aQuery object");
+      	      // Append a jquery object
+      	      equals(p.append(aQuery(document.createElement("b")))
+      		      .children("b").length, 2, "Append aQuery object");
 
-	      // Append using a function
-	      equals(p.append(function() { return document.createElement("i"); })
-		      .children("i").length, 1, "Append DOM element using function");
-	 });
+      	      // Append using a function
+      	      equals(p.append(function() { return document.createElement("i"); })
+      		      .children("i").length, 1, "Append DOM element using function");
+      	 });
 
 
       test("prepend()", function() {
@@ -850,12 +850,12 @@ var aQueryTests = function() {
       	      p.before(note);
       	      equals(p.prevAll("note").length, 1, "Add DOM element");
 
-	      var n = aQuery(document.createElement("note"));
-	      p.before(n);
-     	      equals(p.prevAll("note").length, 2, "Add aQuery object");
+      	      var n = aQuery(document.createElement("note"));
+      	      p.before(n);
+      	      equals(p.prevAll("note").length, 2, "Add aQuery object");
 
-	      equals(p.before(function() { return document.createElement("note"); })
-		      .prevAll("note").length, 3, "Add DOM element using function");
+      	      equals(p.before(function() { return document.createElement("note"); })
+      		      .prevAll("note").length, 3, "Add DOM element using function");
 
       	      });
 
@@ -865,15 +865,69 @@ var aQueryTests = function() {
       	      p.after(note);
       	      equals(p.nextAll("note").length, 1, "Add DOM element");
 
-	      var n = aQuery(document.createElement("note"));
-	      p.after(n);
-     	      equals(p.nextAll("note").length, 2, "Add aQuery object");
+      	      var n = aQuery(document.createElement("note"));
+      	      p.after(n);
+      	      equals(p.nextAll("note").length, 2, "Add aQuery object");
 
-	      equals(p.after(function() { return document.createElement("note"); })
-		      .nextAll("note").length, 3, "Add DOM element using function");
+      	      equals(p.after(function() { return document.createElement("note"); })
+      		      .nextAll("note").length, 3, "Add DOM element using function");
+
+      	      aQuery("note").remove();
 
       	   });
 
+
+      test("remove()", function() {
+      	      expect(3);
+
+      	      var p = aQuery("p");
+      	      p.before(document.createElement("note"));
+      	      equals(aQuery("note").length, 61, "Counting notes");
+      	      aQuery("note").remove();
+      	      equals(aQuery("note").length, 0, "Remove notes");
+
+      	      var beforeCount = aQuery("*").length;
+      	      p.before(document.createElement("note"));
+      	      aQuery("*").remove("note");
+      	      equals(aQuery("*").length, beforeCount, "Remove items using a selector");
+
+      	   });
+
+      test("empty()", function() {
+	      var p = aQuery("p").eq(1);
+	      var cloned = p.clone();
+	      cloned.empty();
+	      equals(cloned.children().length, 0, "Node has no children");
+	      equals(cloned.text().length, 0, "Node has no text");
+
+	      var s = aQuery("section").first().clone();
+	      var count = s.children().length;
+	      equals(s.children().empty().text().length, 0, "Check text is removed");
+	      equals(s.children().length, count, "Check elements are not removed");
+
+	   });
+
+      test("clone()", function() {
+	      var p = aQuery("p").eq(1);
+	      var cloned = p.clone();
+	      ok(cloned.text().indexOf("Sibyllam") > -1, "Node is cloned");
+	      aQuery("p").first().before(cloned);
+	      equals(aQuery("p[contains(., 'Sibyllam')]").length, 2, "Cloned node is copied");
+	      aQuery("p[contains(., 'Sibyllam')]").eq(1).remove();
+	   });
+
+      test("replaceWith()", function() {
+	      var aClone = aQuery("author").clone();
+	      aQuery("author").replaceWith(document.createElement("publisher"));
+	      equals(aQuery("author").length, 0, "tag removed");
+	      equals(aQuery("publisher").length, 1, "new tag inserted");
+	      equals("" + aQuery("prolog").first().children().first()[0].tagName, "publisher", "Tag inserted into correct position");
+
+	      aQuery("publisher").replaceWith(aClone);
+	      equals(aQuery("publisher").length, 0, "tag removed");
+	      equals(aQuery("author").length, 1, "aQuery object inserted");
+
+	   });
 
       // Destroy test environment
       document.close();

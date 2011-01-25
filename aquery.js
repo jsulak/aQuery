@@ -279,21 +279,6 @@ var _$ = function(document) {
       sort: [].sort,
       splice: [].splice,
 
-      // Gets or sets the content of an element
-      text: function(text) {
-	 if (text != null && text != "") {
-	    for (var i = 0; i < this.length; i++) {
-	       var elem = this[i];
-	       for (var child = elem.firstChild; child != null; child = child.nextSibling) {
-		  elem.removeChild(child);
-	       }
-	       elem.appendChild(document.createTextNode(text));
-	    }
-	    return this;
-	 } else {
-	    return getText(this);
-	 }
-      },
 
 
       bind: function(type, data, fn) {
@@ -1202,6 +1187,24 @@ var _$ = function(document) {
    aQuery.fn.extend({
       // NOTE: check frameworkUtils.insertNodeContents, etc., to see how to parse XML markup
 
+      // Gets or sets the content of an element
+      text: function(text) {
+	 if (text != null && text != "") {
+	    for (var i = 0; i < this.length; i++) {
+	       var elem = this[i];
+	       for (var child = elem.firstChild; child != null; child = child.nextSibling) {
+		  elem.removeChild(child);
+	       }
+	       elem.appendChild(document.createTextNode(text));
+	    }
+	    return this;
+	 } else {
+	    return getText(this);
+	 }
+      },
+
+      // TODO: All wrapping functions are missing, since they rely on xml string functionality
+
       append: function() {
    	 return this.domManip(arguments, true, function( elem ) {
    	    if ( this.nodeType === 1 ) {
@@ -1242,30 +1245,94 @@ var _$ = function(document) {
 	 }
       },
 
-      // TODO: Reimplement this like jquery, to detach events.
-      remove: function() {
-	    this.each(function() {
-			 var parent = this.getParentNode();
-			 parent.removeChild(this);
-		      });
-      },
-
-      empty: function() {
+      remove: function( selector, keepData ) {
 	 for ( var i = 0, elem; (elem = this[i]) != null; i++ ) {
-	    // Remove element nodes and prevent memory leaks
-	    if ( elem.nodeType === 1 ) {
-	       aQuery.cleanData( elem.getElementsByTagName("*") );
-	    }
+	    if ( !selector || aQuery.filter( selector, [ elem ] ).length ) {
+	       // if ( !keepData && elem.nodeType === 1 ) {
+	       // 	  aQuery.cleanData( elem.getElementsByTagName("*") );
+	       // 	  aQuery.cleanData( [ elem ] );
+	       // }
 
-	    // Remove any remaining nodes
-	    while ( elem.firstChild ) {
-	    elem.removeChild( elem.firstChild );
+	       if ( elem.parentNode ) {
+		  elem.parentNode.removeChild( elem );
+	       }
 	    }
 	 }
 
 	 return this;
       },
 
+      empty: function() {
+	 for ( var i = 0, elem; (elem = this[i]) != null; i++ ) {
+	    // TODO: Implement cleanData
+	    // Remove element nodes and prevent memory leaks
+	    //if ( elem.nodeType === 1 ) {
+	    //   aQuery.cleanData( elem.getElementsByTagName("*") );
+	    // }
+
+	    // Remove any remaining nodes
+	    while ( elem.firstChild ) {
+	       elem.removeChild( elem.firstChild );
+	    }
+	 }
+
+	 return this;
+      },
+
+      clone: function( events ) {
+	 // Do the clone
+	 var ret = this.map(function() {
+			       return this.cloneNode(true);
+			    });
+
+	 // TODO: Enable event copying
+	 // Copy the events from the original to the clone
+	 //if ( events === true ) {
+	 //   cloneCopyEvent( this, ret );
+	 //   cloneCopyEvent( this.find("*"), ret.find("*") );
+	 //}
+
+	 // Return the cloned set
+	 return ret;
+      },
+
+
+      replaceWith: function( value ) {
+	 if ( this[0] && this[0].parentNode ) {
+	    // Make sure that the elements are removed from the DOM before they are inserted
+	    // this can help fix replacing a parent with child elements
+	    // TODO: This can't be implemented until the .html() substitute is working.
+	    if ( aQuery.isFunction( value ) ) {
+	       return this.each(function(i) {
+				   var self = aQuery(this), old = self.html();
+				   self.replaceWith( value.call( this, i, old ) );
+				});
+	    }
+
+	    if ( typeof value !== "string" ) {
+	       value = aQuery( value ).detach();
+	    }
+
+	    return this.each(function() {
+				var next = this.nextSibling,
+				parent = this.parentNode;
+
+				aQuery( this ).remove();
+
+				if ( next ) {
+				   aQuery(next).before( value );
+				} else {
+				   aQuery(parent).append( value );
+				}
+			     });
+	 } else {
+	    return this.pushStack( aQuery(aQuery.isFunction(value) ? value() : value), "replaceWith", value );
+	 }
+      },
+
+      detach: function( selector ) {
+	 return this.remove( selector, true );
+      },
 
       domManip: function( args, table, callback ) {
 	 var results, first, fragment, parent,
@@ -1326,46 +1393,6 @@ var _$ = function(document) {
       }
    });
 
-
-   aQuery.extend({
-      cleanData: function( elems ) {
-	 var data, id, cache = aQuery.cache,
-	 special = aQuery.event.special,
-	 deleteExpando = aQuery.support.deleteExpando;
-
-	 for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
-	    if ( elem.nodeName && aQuery.noData[elem.nodeName.toLowerCase()] ) {
-	       continue;
-	    }
-
-	    id = elem[ aQuery.expando ];
-
-	    if ( id ) {
-	       data = cache[ id ];
-
-	       if ( data && data.events ) {
-		  for ( var type in data.events ) {
-		     if ( special[ type ] ) {
-			aQuery.event.remove( elem, type );
-
-		     } else {
-			aQuery.removeEvent( elem, type, data.handle );
-		     }
-		  }
-	       }
-
-	       if ( deleteExpando ) {
-		  delete elem[ aQuery.expando ];
-
-	       } else if ( elem.removeAttribute ) {
-		  elem.removeAttribute( aQuery.expando );
-	       }
-
-	       delete cache[ id ];
-	    }
-	 }
-      }
-   });
 
 
    // Simmer is an XPath version of the Sizzle selector engine.
