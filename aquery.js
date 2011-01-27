@@ -65,12 +65,23 @@ var _$ = function(document) {
    // [[Class]] -> type pairs
    class2type = {},
 
+   // A simple way to check for HTML strings or ID strings
+   // (both of which we optimize for)
+   quickExpr = /^(?:[^<]*(<[\w\W]+>)[^>]*$|#([\w\-]+)$)/,
+
+   // Is it a simple selector
+   isSimple = /^.[^:#\[\.,]*$/,
+
    // Check for non-word characters
    rnonword = /\W/,
 
    // Used for trimming whitespace
    trimLeft = /^\s+/,
    trimRight = /\s+$/,
+
+   // Match a standalone tag
+   rsingleTag = /^<(\w+)\s*\/?>(?:<\/\1>)?$/,
+
 
    // Test for full XPath
    fullXPath = /^\//;
@@ -109,46 +120,73 @@ var _$ = function(document) {
    aQuery.fn = aQuery.prototype = {
 
       init: function(selector, context) {
-	 var elem;
+	 var match, elem, ret;
 
 	 // Handle $(""), $(null), or $(undefined)
-	 if (!selector) {
+	 if ( !selector ) {
 	    return this;
 	 }
 
 	 // Handle $(DOMElement)
-	 if (selector.nodeType) {
+	 if ( selector.nodeType ) {
 	    this.context = this[0] = selector;
 	    this.length = 1;
 	    return this;
 	 }
 
 	 // Handle strings
-	 if (typeof selector === "string") {
+	 if ( typeof selector === "string" ) {
 
-	    // Handle ID matching: $("#id")
-	    if (selector.match(/^#/)) {
-	       var id = selector.substr(1);
-	       elem = document.getElementById(id);
-	       this.length = 1;
-	       this[0] = elem;
-	       this.context = document;
-	       this.selector = selector;
-	       return this;
-	    }
+	    // Are we dealing with HTML string or an ID?
+	    match = quickExpr.exec( selector );
 
-	    // Otherwise return all elements in document with the
-	    // $("tagname")
-	    else if ( !rnonword.test( selector ) ) {
+	    // Verify a match, and that no context was specified for #id
+	    // TODO: Removed context test
+	    if ( match ) {
+
+	       // HANDLE: $(html) -> $(array)
+	       if ( match [1] ) {
+
+		  // If a single string is passed in and it's a single tag
+		  // just do a createElement and skip the rest
+		  ret = rsingleTag.exec( selector );
+
+		  if ( ret ) {
+		     if ( aQuery.isPlainObject( context ) ) {
+			selector = [ document.createElement( ret[1] )];
+			aQuery.fn.attr.call( selector, context, true );
+
+		     } else {
+			selector = [ document.createElement( ret[1] ) ];
+	             }
+
+		  } else {
+		     ret = aQuery.buildFragment( [ match[1] ], [ document ] );
+		     // TODO: Removed caching logic
+		     selector = ret.fragment.childNodes;
+
+		  }
+
+		  return aQuery.merge( this, selector );
+
+	       // HANDLE: $("#id")
+	       } else {
+		     elem = document.getElementById( match[2] );
+
+		     this.context = document;
+		     this.selector = selector;
+		     return this;
+	       }
+
+	    // HANDLE $("TAG")
+	    } else if ( !rnonword.test( selector ) ) {
 	       this.selector = selector;
 	       this.context = document;
 	       selector = document.getElementsByTagName(selector);
 	       return aQuery.merge(this, selector);
-	    }
 
-
-	    // If it is a valid xpath expression, then do that
-	    else if (Acl.func("xpath_valid", selector)) {
+	    // HANDLE $("XPATH")
+	    } else if (Acl.func("xpath_valid", selector)) {
 	       // TODO: Allow this to work with a context
 	       var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
 					     fullXPath.test ( selector ) ?
@@ -1118,7 +1156,6 @@ var _$ = function(document) {
 
    aQuery.fragments = {};
 
-
    var rhtml = /<|&#?\w+;/;
 
    aQuery.extend({
@@ -1186,7 +1223,7 @@ var _$ = function(document) {
       // NOTE: check frameworkUtils.insertNodeContents, etc., to see how to parse XML markup
 
       // Gets or sets the content of an element
-      text: function(text) {
+      text: function( text ) {
 	 if (text != null && text != "") {
 	    for (var i = 0; i < this.length; i++) {
 	       var elem = this[i];
@@ -1201,7 +1238,67 @@ var _$ = function(document) {
 	 }
       },
 
-      // TODO: All wrapping functions are missing, since they rely on xml string functionality
+      wrapAll: function( xml ) {
+	 if ( aQuery.isFunction( xml ) ) {
+	    return this.each(function(i) {
+	       aQuery(this).wrapAll( xml.call(this, i) );
+	    });
+	 }
+
+	 if ( this[0] ) {
+	    // The elements to wrap the target around
+	    var wrap = aQuery( xml, this[0].ownerDocument ).eq(0).clone(true);
+
+	    if ( this[0].parentNode ) {
+	       wrap.insertBefore( this[0] );
+	    }
+
+	    wrap.map(function() {
+			var elem = this;
+
+			while ( elem.firstChild && elem.firstChild.nodeType === 1 ) {
+			   elem = elem.firstChild;
+			}
+
+			return elem;
+		     }).append(this);
+	 }
+
+	 return this;
+      },
+
+      wrapInner: function( xml ) {
+	 if ( aQuery.isFunction( xml ) ) {
+	    return this.each(function(i) {
+	       aQuery(this).wrapInner( xml.call(this, i) );
+	    });
+	 }
+
+	 return this.each(function() {
+			     var self = aQuery( this ),
+					   contents = self.contents();
+
+			     if ( contents.length ) {
+				contents.wrapAll( xml );
+			     } else {
+				self.append( xml );
+			     }
+			  });
+      },
+
+      wrap: function( xml ) {
+	 return this.each(function() {
+			     aQuery( this ).wrapAll( xml );
+			  });
+      },
+
+      unwrap: function() {
+	 return this.parent().each(function() {
+				      if ( !aQuery.nodeName( this, "body" ) ) {
+					 aQuery( this ).replaceWith( this.childNodes );
+				      }
+				   }).end();
+      },
 
       append: function() {
    	 return this.domManip(arguments, true, function( elem ) {
@@ -1391,6 +1488,16 @@ var _$ = function(document) {
       }
    });
 
+
+   // Arbortext-specific methods
+   aQuery.fn.extend({
+      oid: function() {
+	 var elem = this[0];
+	 if (elem && elem.nodeType === 1) {
+	    return "" + elem.getFirstOID();
+	 }
+      }
+   });
 
 
    // Simmer is an XPath version of the Sizzle selector engine.
