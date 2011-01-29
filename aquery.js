@@ -39,8 +39,6 @@
 //    $("#idname").attr("class") or
 //    #("#idname").attr("toc", "no")
 //
-// If you need to escape to the actual AOM node, use the "elem" property:
-//    $("#idname").elem.appendChild(newElement)
 
 
 // Source the aquery utils
@@ -172,7 +170,6 @@ var _$ = function(document) {
 	       // HANDLE: $("#id")
 	       } else {
 		     elem = document.getElementById( match[2] );
-
 		     this.context = document;
 		     this.selector = selector;
 		     return this;
@@ -1155,6 +1152,35 @@ var _$ = function(document) {
    };
 
    aQuery.fragments = {};
+
+   aQuery.each({
+      appendTo: "append",
+      prependTo: "prepend",
+      insertBefore: "before",
+      insertAfter: "after",
+      replaceAll: "replaceWith"
+   }, function( name, original ) {
+         aQuery.fn[ name ] = function( selector ) {
+	    var ret = [],
+	    insert = aQuery( selector ),
+	    parent = this.length === 1 && this[0].parentNode;
+
+	    if ( parent && parent.nodeType === 11 && parent.childNodes.length === 1 && insert.length === 1 ) {
+	       insert[ original ]( this[0] );
+	       return this;
+
+	    } else {
+	       for ( var i = 0, l = insert.length; i < l; i++ ) {
+	       var elems = (i > 0 ? this.clone(true) : this).get();
+		  aQuery( insert[i] )[ original ]( elems );
+		  ret = ret.concat( elems );
+	       }
+
+	       return this.pushStack( ret, name, insert.selector );
+	    }
+       };
+   });
+
 
    var rhtml = /<|&#?\w+;/;
 
