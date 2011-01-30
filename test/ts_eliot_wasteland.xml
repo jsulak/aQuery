@@ -20,8 +20,8 @@ value="Not copyrighted in the United States. If you live
 <body>
 <p>T. S. Eliot</p>
 <p><q><i>Nam Sibyllam quidem Cumis ego ipse oculis meis vidi in ampulla
-pendere, et cu<?Pub Caret?>m illi           pueri dicerent: Sibylla
-ti theleis; respondebat illa: apothanein thelo.﻿</i></q></p>
+pendere, et cum illi           pueri dicerent: Sibylla ti theleis;
+respondebat illa: apothanein thelo.<?Pub Caret?></i></q></p>
 <section>       <title>I. The Burial of the Dead</title>       <lines
 outputclass="stanza">
 April is the cruellest month, breeding 
@@ -703,4 +703,4 @@ feeble translation of the content of this word. </p>       </section>
 </body>
 </topic>
 </topic>
-<?Pub *0000035689 0?>
+<?Pub *0000035688 0?>

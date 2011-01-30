@@ -1182,7 +1182,11 @@ var _$ = function(document) {
    });
 
 
-   var rhtml = /<|&#?\w+;/;
+   var rinlinejQuery = / jQuery\d+="(?:\d+|null)"/g,
+       rleadingWhitespace = /^\s+/,
+       rtagName = /<([\w:]+)/,
+       rhtml = /<|&#?\w+;/;
+
 
    aQuery.extend({
       clean: function( elems, context, fragment, scripts ) {
@@ -1415,6 +1419,37 @@ var _$ = function(document) {
 
 	 // Return the cloned set
 	 return ret;
+      },
+
+
+      xml: function( value ) {
+	 if ( value === undefined ) {
+	    if (this[0] && this[0].nodeType === 1) {
+	       var range = document.createRange();
+	       range.selectNodeContents(this[0]);
+	       return "" + range.toMarkupString();
+	    }
+	    else {
+	       return null;
+	    }
+
+	 // See if we can take a shortcut and just use innerHTML
+         // TODO: removed caching & wrapmap logic
+	 // TODO: Might be able to optimize and insert directly instead of calling append
+	 } else if ( typeof value === "string") {
+	    this.empty().append( value );
+
+	 } else if ( aQuery.isFunction( value ) ) {
+	    this.each(function(i){
+			 var self = aQuery( this );
+			 self.xml( value.call(this, i, self.xml()) );
+		      });
+
+	 } else {
+	    this.empty().append( value );
+	 }
+
+	 return this;
       },
 
 
