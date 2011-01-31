@@ -1,48 +1,14 @@
 /*
  * aQuery - jQuery for the Arbortext Object Model
  * http://bitbucket.org/jasulak/aquery/
- * Copyright (c) 2010 James Sulak
-
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Copyright (c) 2010, 2011 James Sulak
+ * Dual licensed under the MIT or GPL Version 2 licenses.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
  */
 
-// Instructions:
-// To use it on the current document:
-//    var $ = _$(Application.activeDocument);
-//
-// You can get elements by id:
-//    var elem = $("#idname")
-//
-// You can get all the elements in a document with a particular name:
-//    var elems = $("chapter")
-//
-// You can get the children of an element w/ a particular name:
-//    var children = #("idname").children("section")
-//
-// You can get/set attributes:
-//    $("#idname").attr("class") or
-//    #("#idname").attr("toc", "no")
-//
-
-
 // Source the aquery utils
-//Acl.execute("source aquery_utils.acl");
+Acl.execute("source aquery_utils.acl");
 
 
 var _$ = function(document) {
