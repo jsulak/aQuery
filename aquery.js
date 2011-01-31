@@ -1,9 +1,17 @@
 /*
- * aQuery - jQuery for the Arbortext Object Model
+ * aQuery - jQuery for the Arbortext Object Model v.7a
  * http://github.com/jsulak/aQuery
  *
- * Copyright (c) 2010, 2011 James Sulak
+ * Copyright 2011, James Sulak
  * Dual licensed under the MIT or GPL Version 2 licenses.
+ *
+ *
+ * jQuery JavaScript Library v1.4.4
+ * http://jquery.com/
+ *
+ * Copyright 2010, John Resig
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
  *
  */
 
