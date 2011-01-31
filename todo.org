@@ -1,5 +1,0 @@
-aQuery To Do
-------------
-
-* TODO Set up constructor to always grab the current document
-* TODO Make aquery a function that has properties.
