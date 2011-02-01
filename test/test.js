@@ -11,17 +11,13 @@ var aQueryTests = function() {
 
 
    function Setup() {
+      Acl.execute("source qunit.js");
 
-      var ret;
-      ret = Acl.execute("source extensions.js");
-      ret = Acl.execute("source qunit.js");
       // TODO: Update this path
-      ret = Acl.execute("source b:/workspace/aquery/aquery.js");
-      ret = Acl.execute("source b:/workspace/aquery/aquery_utils.acl");
+      Acl.execute("source b:/workspace/aquery/aquery.js");
 
       QUnitSetup();
    }
-
 
 
    // TODO: This is called both here and in edit init.  Should there be a seperate file, maybe qunit_harness.js?
@@ -55,8 +51,6 @@ var aQueryTests = function() {
 				}
 			     });
    }
-
-
 
 
 

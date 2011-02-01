@@ -509,9 +509,9 @@ var _$ = function(document) {
       },
 
       inArray: function( elem, array ) {
-	 if ( !elem.nodeType && array.indexOf ) {
-	    return array.indexOf( elem );
-	 }
+	 //if ( !elem.nodeType && array.indexOf ) {
+	 //   return array.indexOf( elem );
+	 //}
 
 	 for ( var i = 0, length = array.length; i < length; i++ ) {
 	    if ( ( array[ i ].nodeType && array[ i ].equals( elem ) ) || ( array[ i ] === elem ) ) {
