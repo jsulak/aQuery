@@ -146,6 +146,8 @@ var _$ = function(document) {
 		     elem = document.getElementById( match[2] );
 		     this.context = document;
 		     this.selector = selector;
+		     this.length = 1;
+		     this[0] = elem;
 		     return this;
 	       }
 
