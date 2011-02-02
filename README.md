@@ -6,7 +6,7 @@ aQuery is the new, better way to manipulate XML in Arbortext Editor.  It can be 
 
 The current version of aQuery is 0.7 alpha.  You can download it here.
 
-The documentation on how to use aQuery is the [jQuery documentation](http://docs.jquery.com/Main_Page) itself.  Most methods that make sense to use in an XML environment have been ported; a full list is below under API.
+The documentation on how to use aQuery is the [jQuery documentation](http://docs.jquery.com/Main_Page) itself.  Most methods that make sense to use in an XML-only environment have been ported; a full list is below under API.
 
 
 ## How To Use ##
@@ -23,7 +23,7 @@ The variable `titles` is now a aQuery object that contains references to all of 
     
 The content of every `<title/>` in the document is replaced with the text "Howdy!".
 
-If you want to work with a document that is not the active document (for example, a XUI dialog), then you can use the $$ constructor, passing it a reference to a DOM document object:
+If you want to work with a document that is not the active document (for example, a XUI dialog), then you can use the `$$` function, passing it a reference to a DOM document object:
 
     var $dialog = $$(XUIDoc);
     
