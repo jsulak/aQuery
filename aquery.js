@@ -1621,16 +1621,16 @@ aQueryCreate = $$ = _$ = function(document) {
       }
 
       else if ( !rnonword.test( selector ) ) {
-	 results = aQuery.merge(results, context.getElementsByTagName(selector));
+         results = aQuery.merge(results, context.getElementsByTagName(selector));
       }
 
       // If it is a valid xpath expression, then do that
       else if (Acl.func("xpath_valid", selector)) {
-	 var oidNodesString;
+         var oidNodesString;
 
-	 // If we have a context element, then use it
-	 if (context.nodeType === 1) {
-	    oidNodesString = Acl.func("aquery_utils::get_xpath_oids",
+         // If we have a context element, then use it
+         if (context.nodeType === 1) {
+            oidNodesString = Acl.func("aquery_utils::get_xpath_oids",
 				      context.getFirstOID(),
 				      fullXPath.test(selector) ?
 					 selector :

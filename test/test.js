@@ -789,307 +789,307 @@ var aQueryTests = function() {
 
       	      // TODO: Array of contexts
 
-      	   });
+           });
 
 
       test("append()", function() {
-      	      expect(6);
+              expect(6);
 
-      	      // Append plain text
-      	      var p = $doc("p").first();
+              // Append plain text
+              var p = $doc("p").first();
 
-      	      equals(p.append("hello").text().substr(-5), "hello", "Append plain text");
+              equals(p.append("hello").text().substr(-5), "hello", "Append plain text");
 
-      	      // Append a dom node
-      	      var n = document.createElement("b");
-      	      equals(p.append(n).children("b").length, 1, "Append DOM element");
+              // Append a dom node
+              var n = document.createElement("b");
+              equals(p.append(n).children("b").length, 1, "Append DOM element");
 
-      	      // Append a jquery object
-      	      equals(p.append($doc(document.createElement("b")))
-      		      .children("b").length, 2, "Append $doc object");
+              // Append a jquery object
+              equals(p.append($doc(document.createElement("b")))
+                      .children("b").length, 2, "Append $doc object");
 
-      	      // Append using a function
-      	      equals(p.append(function() { return document.createElement("i"); })
-      		      .children("i").length, 1, "Append DOM element using function");
+              // Append using a function
+              equals(p.append(function() { return document.createElement("i"); })
+                      .children("i").length, 1, "Append DOM element using function");
 
-      	      // Append using a string
-      	      equals(p.append("<b>howdy</b>")
-      		      .children("b").length, 3, "Append markup string");
-      	      equals(p.text().substr(-5) , "howdy", "Append markup string");
+              // Append using a string
+              equals(p.append("<b>howdy</b>")
+                      .children("b").length, 3, "Append markup string");
+              equals(p.text().substr(-5) , "howdy", "Append markup string");
 
-      	      // TODO: Figure out why text doesn't work here.
-      	      p.xml("T. S. Eliot");
-      	 });
+              // TODO: Figure out why text doesn't work here.
+              p.xml("T. S. Eliot");
+         });
 
 
       test("prepend()", function() {
-      	      expect(6);
+              expect(6);
 
-      	      var p = $doc("p").eq(1);
-      	      var clone = p.clone();
+              var p = $doc("p").eq(1);
+              var clone = p.clone();
 
-      	      equals(p.prepend("hello").text().substr(0, 5), "hello", "Append plain text");
-      	      var n = document.createElement("b");
-      	      equals(p.prepend(n).children("b").length, 1, "Append DOM element");
-      	      equals(p.prepend($doc(document.createElement("b")))
-      		      .children("b").length, 2, "Prepend $doc object");
-      	      equals(p.prepend(function() { return document.createElement("b"); })
-      		      .children("b").length, 3, "Append DOM element using function");
+              equals(p.prepend("hello").text().substr(0, 5), "hello", "Append plain text");
+              var n = document.createElement("b");
+              equals(p.prepend(n).children("b").length, 1, "Append DOM element");
+              equals(p.prepend($doc(document.createElement("b")))
+                      .children("b").length, 2, "Prepend $doc object");
+              equals(p.prepend(function() { return document.createElement("b"); })
+                      .children("b").length, 3, "Append DOM element using function");
 
-      	      equals(p.prepend("<b>howdy</b>")
-      		      .children("b").length, 4, "Append a markup string");
-      	      equals(p.text().substr(0, 5), "howdy", "Append a markup string");
+              equals(p.prepend("<b>howdy</b>")
+                      .children("b").length, 4, "Append a markup string");
+              equals(p.text().substr(0, 5), "howdy", "Append a markup string");
 
-      	      // Remove markup string
-      	      p.replaceWith(clone);
-      	 });
+              // Remove markup string
+              p.replaceWith(clone);
+         });
 
       test("before()", function() {
-      	      expect(4);
-      	      var p = $doc("p").first();
-      	      var note = document.createElement("note");
-      	      p.before(note);
-      	      equals(p.prevAll("note").length, 1, "Add DOM element");
+              expect(4);
+              var p = $doc("p").first();
+              var note = document.createElement("note");
+              p.before(note);
+              equals(p.prevAll("note").length, 1, "Add DOM element");
 
-      	      var n = $doc(document.createElement("note"));
-      	      p.before(n);
-      	      equals(p.prevAll("note").length, 2, "Add $doc object");
+              var n = $doc(document.createElement("note"));
+              p.before(n);
+              equals(p.prevAll("note").length, 2, "Add $doc object");
 
-      	      equals(p.before(function() { return document.createElement("note"); })
-      		      .prevAll("note").length, 3, "Add DOM element using function");
+              equals(p.before(function() { return document.createElement("note"); })
+                      .prevAll("note").length, 3, "Add DOM element using function");
 
-      	      p.before("<note />");
-      	      equals(p.prevAll("note").length, 4, "Add markup string");
+              p.before("<note />");
+              equals(p.prevAll("note").length, 4, "Add markup string");
 
-      	      $doc("note").remove();
+              $doc("note").remove();
 
-      	   });
+           });
 
       test("after()", function() {
-      	      expect(4);
+              expect(4);
 
-      	      var p = $doc("p").first();
-      	      var note = document.createElement("note");
-      	      p.after(note);
-      	      equals(p.nextAll("note").length, 1, "Add DOM element");
+              var p = $doc("p").first();
+              var note = document.createElement("note");
+              p.after(note);
+              equals(p.nextAll("note").length, 1, "Add DOM element");
 
-      	      var n = $doc(document.createElement("note"));
-      	      p.after(n);
-      	      equals(p.nextAll("note").length, 2, "Add $doc object");
+              var n = $doc(document.createElement("note"));
+              p.after(n);
+              equals(p.nextAll("note").length, 2, "Add $doc object");
 
-      	      equals(p.after(function() { return document.createElement("note"); })
-      		      .nextAll("note").length, 3, "Add DOM element using function");
+              equals(p.after(function() { return document.createElement("note"); })
+                      .nextAll("note").length, 3, "Add DOM element using function");
 
-      	      p.after("<note />");
-      	      equals(p.nextAll("note").length, 4, "Add markup string");
+              p.after("<note />");
+              equals(p.nextAll("note").length, 4, "Add markup string");
 
-      	      $doc("note").remove();
-      	   });
+              $doc("note").remove();
+           });
 
 
       test("remove()", function() {
-      	      expect(3);
+              expect(3);
 
-      	      var p = $doc("p");
-      	      p.before(document.createElement("note"));
-      	      equals($doc("note").length, 61, "Counting notes");
-      	      $doc("note").remove();
-      	      equals($doc("note").length, 0, "Remove notes");
+              var p = $doc("p");
+              p.before(document.createElement("note"));
+              equals($doc("note").length, 61, "Counting notes");
+              $doc("note").remove();
+              equals($doc("note").length, 0, "Remove notes");
 
-      	      var beforeCount = $doc("*").length;
-      	      p.before(document.createElement("note"));
-      	      $doc("*").remove("note");
-      	      equals($doc("*").length, beforeCount, "Remove items using a selector");
-      	   });
+              var beforeCount = $doc("*").length;
+              p.before(document.createElement("note"));
+              $doc("*").remove("note");
+              equals($doc("*").length, beforeCount, "Remove items using a selector");
+           });
 
       test("empty()", function() {
-      	      expect(4);
+              expect(4);
 
-      	      var p = $doc("p").eq(1);
-      	      var cloned = p.clone();
-      	      cloned.empty();
-      	      equals(cloned.children().length, 0, "Node has no children");
-      	      equals(cloned.text().length, 0, "Node has no text");
+              var p = $doc("p").eq(1);
+              var cloned = p.clone();
+              cloned.empty();
+              equals(cloned.children().length, 0, "Node has no children");
+              equals(cloned.text().length, 0, "Node has no text");
 
-      	      var s = $doc("section").first().clone();
-      	      var count = s.children().length;
-      	      equals(s.children().empty().text().length, 0, "Check text is removed");
-      	      equals(s.children().length, count, "Check elements are not removed");
-      	   });
+              var s = $doc("section").first().clone();
+              var count = s.children().length;
+              equals(s.children().empty().text().length, 0, "Check text is removed");
+              equals(s.children().length, count, "Check elements are not removed");
+           });
 
       test("clone()", function() {
-      	      expect(2);
+              expect(2);
 
-      	      var p = $doc("p").eq(1);
-      	      var cloned = p.clone();
-      	      ok(cloned.text().indexOf("Sibyllam") > -1, "Node is cloned");
-      	      $doc("p").first().before(cloned);
-      	      equals($doc("p[contains(., 'Sibyllam')]").length, 2, "Cloned node is copied");
-      	      $doc("p[contains(., 'Sibyllam')]").eq(0).remove();
-      	   });
+              var p = $doc("p").eq(1);
+              var cloned = p.clone();
+              ok(cloned.text().indexOf("Sibyllam") > -1, "Node is cloned");
+              $doc("p").first().before(cloned);
+              equals($doc("p[contains(., 'Sibyllam')]").length, 2, "Cloned node is copied");
+              $doc("p[contains(., 'Sibyllam')]").eq(0).remove();
+           });
 
       test("replaceWith()", function() {
-      	      expect(7);
+              expect(7);
 
-      	      var aClone = $doc("author").clone();
-      	      $doc("author").replaceWith(document.createElement("publisher"));
-      	      equals($doc("author").length, 0, "tag removed");
-      	      equals($doc("publisher").length, 1, "new tag inserted");
-      	      equals("" + $doc("prolog").first().children().first()[0].tagName, "publisher", "Tag inserted into correct position");
+              var aClone = $doc("author").clone();
+              $doc("author").replaceWith(document.createElement("publisher"));
+              equals($doc("author").length, 0, "tag removed");
+              equals($doc("publisher").length, 1, "new tag inserted");
+              equals("" + $doc("prolog").first().children().first()[0].tagName, "publisher", "Tag inserted into correct position");
 
-      	      $doc("publisher").replaceWith(aClone);
-      	      equals($doc("publisher").length, 0, "tag removed");
-      	      equals($doc("author").length, 1, "$doc object inserted");
+              $doc("publisher").replaceWith(aClone);
+              equals($doc("publisher").length, 0, "tag removed");
+              equals($doc("author").length, 1, "$doc object inserted");
 
-      	      $doc("author").replaceWith("<publisher />");
-      	      equals($doc("publisher").length, 1, "new tag inserted");
-      	      equals("" + $doc("prolog").first().children().first()[0].tagName, "publisher", "Tag inserted into correct position");
+              $doc("author").replaceWith("<publisher />");
+              equals($doc("publisher").length, 1, "new tag inserted");
+              equals("" + $doc("prolog").first().children().first()[0].tagName, "publisher", "Tag inserted into correct position");
 
-      	      $doc("publisher").replaceWith(aClone);
-      	   });
+              $doc("publisher").replaceWith(aClone);
+           });
 
 
 
       test("wrapAll()", function() {
-      	      expect(2);
-      	      var p = $doc("p").slice(0, 2);
-      	      p.wrapAll("<note/>");
-      	      equals("" + $doc("body").first().children().first()[0].tagName, "note");
-      	      equals($doc("note").children().length, 2);
-      	      p.unwrap();
-      	   });
+              expect(2);
+              var p = $doc("p").slice(0, 2);
+              p.wrapAll("<note/>");
+              equals("" + $doc("body").first().children().first()[0].tagName, "note");
+              equals($doc("note").children().length, 2);
+              p.unwrap();
+           });
 
       test("wrapInner()", function() {
-      	      var p = $doc("p").first();
+              var p = $doc("p").first();
 
-      	      // Insert markup string
-      	      p.wrapInner("<b><i></i></b>");
+              // Insert markup string
+              p.wrapInner("<b><i></i></b>");
 
-      	      equals(p.text(), "T. S. Eliot", "Check text");
-      	      ok(p.children().first().is("b"), "Bold inserted");
-      	      equals(p.children().length, 1, "Bold is the only child");
-      	      ok(p.children().first().children().first().is("i"), "Italic inserted");
+              equals(p.text(), "T. S. Eliot", "Check text");
+              ok(p.children().first().is("b"), "Bold inserted");
+              equals(p.children().length, 1, "Bold is the only child");
+              ok(p.children().first().children().first().is("i"), "Italic inserted");
 
-      	      p.children().remove();
-      	      p.text("T. S. Eliot");
+              p.children().remove();
+              p.text("T. S. Eliot");
 
-      	      // Insert DOM element
-      	      var bold = document.createElement("b");
-      	      p.wrapInner(bold);
+              // Insert DOM element
+              var bold = document.createElement("b");
+              p.wrapInner(bold);
 
-      	      equals(p.text(), "T. S. Eliot", "Check text");
-      	      ok(p.children().first().is("b"), "Bold inserted");
-      	      equals(p.children().length, 1, "Bold is the only child");
+              equals(p.text(), "T. S. Eliot", "Check text");
+              ok(p.children().first().is("b"), "Bold inserted");
+              equals(p.children().length, 1, "Bold is the only child");
 
-      	      p.children().remove();
-      	      p.text("T. S. Eliot");
+              p.children().remove();
+              p.text("T. S. Eliot");
 
-      	      // Insert function
-      	      p.wrapInner(function() { return document.createElement("b"); });
+              // Insert function
+              p.wrapInner(function() { return document.createElement("b"); });
 
-      	      equals(p.text(), "T. S. Eliot", "Check text");
-      	      ok(p.children().first().is("b"), "Bold inserted");
-      	      equals(p.children().length, 1, "Bold is the only child");
+              equals(p.text(), "T. S. Eliot", "Check text");
+              ok(p.children().first().is("b"), "Bold inserted");
+              equals(p.children().length, 1, "Bold is the only child");
 
-      	      p.children().remove();
-      	      p.text("T. S. Eliot");
+              p.children().remove();
+              p.text("T. S. Eliot");
 
-      	      // Insert $doc object
-      	      bold = $doc("<b/>");
-      	      p.wrapInner(bold);
+              // Insert $doc object
+              bold = $doc("<b/>");
+              p.wrapInner(bold);
 
-      	      equals(p.text(), "T. S. Eliot", "Check text");
-      	      ok(p.children().first().is("b"), "Bold inserted");
-      	      equals(p.children().length, 1, "Bold is the only child");
+              equals(p.text(), "T. S. Eliot", "Check text");
+              ok(p.children().first().is("b"), "Bold inserted");
+              equals(p.children().length, 1, "Bold is the only child");
 
-      	      p.children().remove();
-      	      p.text("T. S. Eliot");
+              p.children().remove();
+              p.text("T. S. Eliot");
 
-      	   });
+           });
 
 
       test("wrap()", function() {
-      	      expect(26);
-      	      var p = $doc("p").slice(0, 2);
+              expect(26);
+              var p = $doc("p").slice(0, 2);
 
-      	      // Insert markup string
-      	      p.wrap("<note />");
-      	      equals($doc("note").length, 2, "Elements wrapped by on-the-fly XML");
-      	      equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
-      	      equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
-      	      equals($doc("note").first().text(), "T. S. Eliot", "Check text");
+              // Insert markup string
+              p.wrap("<note />");
+              equals($doc("note").length, 2, "Elements wrapped by on-the-fly XML");
+              equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
+              equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
+              equals($doc("note").first().text(), "T. S. Eliot", "Check text");
 
-      	      $doc("note/p").unwrap();
-      	      equals($doc("note").length, 0, "Notes unwrapped");
+              $doc("note/p").unwrap();
+              equals($doc("note").length, 0, "Notes unwrapped");
 
-      	      // Insert DOM node
-      	      var note = document.createElement("note");
-      	      p.wrap(note);
-      	      equals($doc("note").length, 2, "Elements wrapped by DOM element");
-      	      equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
-      	      equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
-      	      equals($doc("note").first().text(), "T. S. Eliot", "Check text");
+              // Insert DOM node
+              var note = document.createElement("note");
+              p.wrap(note);
+              equals($doc("note").length, 2, "Elements wrapped by DOM element");
+              equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
+              equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
+              equals($doc("note").first().text(), "T. S. Eliot", "Check text");
 
-      	      $doc("note/p").unwrap();
-      	      equals($doc("note").length, 0, "Notes unwrapped");
+              $doc("note/p").unwrap();
+              equals($doc("note").length, 0, "Notes unwrapped");
 
-      	      // Insert function
-      	      p.wrap(function() { return document.createElement("note"); });
-      	      equals($doc("note").length, 2, "Elements wrapped by function");
-      	      equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
-      	      equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
-      	      equals($doc("note").first().text(), "T. S. Eliot", "Check text");
+              // Insert function
+              p.wrap(function() { return document.createElement("note"); });
+              equals($doc("note").length, 2, "Elements wrapped by function");
+              equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
+              equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
+              equals($doc("note").first().text(), "T. S. Eliot", "Check text");
 
-      	      $doc("note/p").unwrap();
-      	      equals($doc("note").length, 0, "Notes unwrapped");
+              $doc("note/p").unwrap();
+              equals($doc("note").length, 0, "Notes unwrapped");
 
-      	      $doc("body").first().prepend("<note />");
-      	      equals($doc("note").length, 1, "Note added");
+              $doc("body").first().prepend("<note />");
+              equals($doc("note").length, 1, "Note added");
 
-      	      // Insert $doc object
-      	      p.wrap($doc("note"));
-      	      $doc("note").first().remove();
-      	      equals($doc("note").length, 2, "Elements wrapped by $doc object");
-      	      equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
-      	      equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
-      	      equals($doc("note").first().text(), "T. S. Eliot", "Check text");
+              // Insert $doc object
+              p.wrap($doc("note"));
+              $doc("note").first().remove();
+              equals($doc("note").length, 2, "Elements wrapped by $doc object");
+              equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
+              equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
+              equals($doc("note").first().text(), "T. S. Eliot", "Check text");
 
-      	      $doc("note/p").unwrap();
-      	      equals($doc("note").length, 0, "Notes unwrapped");
+              $doc("note/p").unwrap();
+              equals($doc("note").length, 0, "Notes unwrapped");
 
-      	      $doc("body").first().prepend("<note />");
+              $doc("body").first().prepend("<note />");
 
-      	      // Insert selector expression
-      	      p.wrap("note");
-      	      $doc("note").first().remove();
-      	      equals($doc("note").length, 2, "Elements wrapped by selector expression");
-      	      equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
-      	      equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
-      	      equals($doc("note").first().text(), "T. S. Eliot", "Check text");
+              // Insert selector expression
+              p.wrap("note");
+              $doc("note").first().remove();
+              equals($doc("note").length, 2, "Elements wrapped by selector expression");
+              equals($doc("note").filter("*[p]").length, 2, "Both notes contain a paragraph");
+              equals($doc("body").first().children().slice(0, 2).filter("note").length, 2, "First two children are notes.");
+              equals($doc("note").first().text(), "T. S. Eliot", "Check text");
 
-      	      $doc("note/p").unwrap();
-      	      equals($doc("note").length, 0, "Notes unwrapped");
+              $doc("note/p").unwrap();
+              equals($doc("note").length, 0, "Notes unwrapped");
       });
 
 
       test("xml()", function() {
-      	      expect(7);
-      	      var p = $doc("p").first();
+              expect(7);
+              var p = $doc("p").first();
 
 
-      	      equals(p.xml(), "T. S. Eliot", "Get string");
-      	      equals("<q><i>Nam Sibyllam quidem Cumis ego ipse oculis meis vidi in ampulla pendere, et cum illi           pueri dicerent: Sibylla ti theleis; respondebat illa: apothanein thelo.</i></q>", $doc("p").eq(1).xml(), "Get string");
+              equals(p.xml(), "T. S. Eliot", "Get string");
+              equals("<q><i>Nam Sibyllam quidem Cumis ego ipse oculis meis vidi in ampulla pendere, et cum illi           pueri dicerent: Sibylla ti theleis; respondebat illa: apothanein thelo.</i></q>", $doc("p").eq(1).xml(), "Get string");
 
-      	      // Set
-      	      p.xml("Hello!");
-      	      equals(p.text(), "Hello!", "Set string");
-      	      p.xml("<b>Howdy!</b>");
-      	      equals(p.children().length, 1, "Set markup string");
-      	      equals("" + p.children()[0].tagName, "b", "Set markup string");
-      	      equals(p.text(), "Howdy!", "Set markup string");
+              // Set
+              p.xml("Hello!");
+              equals(p.text(), "Hello!", "Set string");
+              p.xml("<b>Howdy!</b>");
+              equals(p.children().length, 1, "Set markup string");
+              equals("" + p.children()[0].tagName, "b", "Set markup string");
+              equals(p.text(), "Howdy!", "Set markup string");
 
-      	      p.xml(function() { return "Aloha!"; });
-      	      equals(p.text(), "Aloha!", "Set function");
+              p.xml(function() { return "Aloha!"; });
+              equals(p.text(), "Aloha!", "Set function");
 
       	      p.text("T. S. Eliot");
       	   });
