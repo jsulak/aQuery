@@ -16,7 +16,7 @@
  */
 
 // Source the aquery utils
-Acl.execute("source aquery_utils.acl");
+//Acl.execute("source aquery_utils.acl");
 
 var aQuery, $;
 
@@ -32,7 +32,6 @@ aQuery = $ = (function() {
       // same document.
       if (target.nodeType && target.nodeType === 9) {
 	 if (!current || !target.equals(current.document)) {
-	    print("no current object.  creating new object");
 	    current = aQueryCreate(target);
 	 }
       } else {
@@ -84,7 +83,10 @@ aQueryCreate = $$ = _$ = function(document) {
 
 
    // Test for full XPath
-   fullXPath = /^\//;
+   fullXPath = /^\//,
+
+   // Test for OID
+   isoid = /^\(\d+,\d+,\d+\)$/;
 
    // ================================
    // Private functions
@@ -191,14 +193,23 @@ aQueryCreate = $$ = _$ = function(document) {
 		     return this;
 	       }
 
-	    // HANDLE $("TAG")
+	    // HANDLE: $("TAG")
 	    } else if ( !rnonword.test( selector ) ) {
 	       this.selector = selector;
 	       this.context = document;
 	       selector = document.getElementsByTagName(selector);
 	       return aQuery.merge(this, selector);
 
-	    // HANDLE $("XPATH")
+	    // HANDLE: $("OID")
+	    } else if ( isoid.test( selector ) ) {
+	       elem = Acl.getDOMOID(selector);
+	       this.selector = selector;
+	       this.context = document;
+	       this.length = 1;
+	       this[0] = elem;
+	       return this;
+
+	    // HANDLE: $("XPATH")
 	    } else if (Acl.func("xpath_valid", selector)) {
 	       // TODO: Allow this to work with a context
 	       var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
@@ -1170,7 +1181,7 @@ aQueryCreate = $$ = _$ = function(document) {
       }
 
       if ( cacheable ) {
-	 aQuery.fragments[ args[0] ] = cacheresults ? fragment : 1;
+	 aQuery.fragments[ args[0] ] = cacheresults ? fragment.cloneNode(true) : 1;
       }
 
       return { fragment: fragment, cacheable: cacheable };
@@ -1550,17 +1561,14 @@ aQueryCreate = $$ = _$ = function(document) {
 	       first = fragment.firstChild;
 	    }
 
+	    // TODO: Removed table stuff
 	    if ( first ) {
-	       table = table && aQuery.nodeName( first, "tr" );
-
 	       for ( var i = 0, l = this.length; i < l; i++ ) {
 		  callback.call(
-		     table ?
-			root(this[i], first) :
 			this[i],
 			i > 0 || results.cacheable || this.length > 1  ?
-			fragment.cloneNode(true) :
-			fragment
+			   fragment.cloneNode(true) :
+			   fragment
 		  );
 	       }
 	    }
@@ -1606,6 +1614,10 @@ aQueryCreate = $$ = _$ = function(document) {
 	 // TODO: If the context is an element, make sure that it is actually a descendant
 	 var id = selector.substr(1);
 	 results.push(document.getElementById(id));
+      }
+
+      else if ( isoid.test( selector ) ) {
+	 results.push(Acl.getDOMOID(selector));
       }
 
       else if ( !rnonword.test( selector ) ) {

@@ -128,10 +128,16 @@ var aQueryTests = function() {
 
 
       test("Test accessors", function() {
-      	      expect(3);
+      	      expect(6);
       	      equal($doc("p").length, 61);
       	      equal($doc("/topic/title").text(), "The Waste Land");
       	      equal($doc("sdfsdf").length, 0, "No hits in XPath, then zero length");
+	      equal($doc("#topic-1").length, 1, "topic id found");
+	      equal("" + $doc("#topic-1")[0].tagName, "topic", "topic id found");
+
+	      var oid = $doc("#topic-1").oid();
+	      equal($doc(oid).attr("id"), "topic-1", "get element by OID");
+
       	   });
 
 
@@ -766,6 +772,9 @@ var aQueryTests = function() {
       	      equals($doc("data").find("topic").length, 0, "Find - none expected");
       	      equals($doc("data").find("topic/title").length, 0, "Find - xpath, none expected");
       	      equals($doc("/topic").find("#notes-on-the-wasteland").length, 1, "Find - id");
+
+	      var oid = $doc("#notes-on-the-wasteland").oid();
+	      equals($doc(oid).attr("id"), "notes-on-the-wasteland", "Find - oid");
 
       	   });
 
