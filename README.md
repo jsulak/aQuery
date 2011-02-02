@@ -13,29 +13,43 @@ The documentation on how to use aQuery is the [jQuery documentation](http://docs
 
 Add `aquery.js` and `aquery_utils.acl` to your `APTCUSTOM/scripts/` folder.  Source them both on Arbortext startup.  
 
-To try it out, open a document and type the following on the javascript command line (to activate the Javascript command line, place your cursor in the command line and press F5):
+To try it out, open a document and type the following on the Javascript command line (to activate the Javascript command line, place your cursor in the command line and press F5).  For example, to select all titles in the active document:
 
-    var $ = _$(Application.activeDocument);
+    var titles = $("title");
 
-This instantiates an aQuery object that you can use to query and manipulate the DOM of the active document.  A shortcut for this command is:
+The variable `titles` is now a aQuery object that contains references to all of the `<title/>`s in the active document.  For more powerful ways to select elements, see *Selectors* below.  If you do this:
 
-    var $ = _$();
+    titles.text("Howdy!");
+    
+The content of every `<title/>` in the document is replaced with the text "Howdy!".
 
+If you want to work with a document that is not the active document (for example, a XUI dialog), then you can use the $$ constructor, passing it a reference to a DOM document object:
+
+    var $dialog = $$(XUIDoc);
+    
+Now, you can select all the list items in that dialog:
+
+    var listitems = $dialog("listitem");
+    
+Note that `$` and `$$` are simply convenient abbreviations for `aQuery` and `aQueryCreate` respectively; you can use those instead if you prefer.
 
 ## Selectors ##
 
-Instead of using jQuery's CSS 3 selector syntax, aQuery uses XPath 1.0 in the form of XSLT match expressions.  For example, to select all the section titles in a document:
+Instead of using jQuery's CSS 3 selector syntax, aQuery uses XPath 1.0 in the form of XSLT match expressions.  For example, to select all the section paragraphs in a document:
 
     $("section/p")
 
-To select an element with a given id, you cna use the `#id` syntax.  For exmple, to select the element with the id "topic-1":
+To select an element with a given id, you can use the `#id` syntax.  For example, to select the element with the id "topic-1":
 
     $("#topic-1")
  
-To create a new element, you can pass the aQuery object a markup string.  For example, to create a new section:
+To create a new element, you can pass the aQuery constructor a markup string.  For example:
 
     $("<section id='newsect'><title>New Section!</title><p/></section>")
 
+returns an aQuery object containing a new `<section />` element.  You can also pass a DOM element to the aQuery constructor, and get an aQuery object representing that element:
+
+    $(Application.activeDocument.getElementById("topic-1"));
     
 ## API ##
 
