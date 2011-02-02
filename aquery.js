@@ -18,8 +18,36 @@
 // Source the aquery utils
 Acl.execute("source aquery_utils.acl");
 
+var aQuery, $;
 
-var _$ = function(document) {
+aQuery = $ = (function() {
+
+   var current = null;
+
+   return function(target, context) {
+
+      // If the target is a document, then call constructor.  Else create
+      // new aquery object based on the activeDocument and call that instead.
+      // One aQuery object is cached to speed up a sequence of queries to the
+      // same document.
+      if (target.nodeType && target.nodeType === 9) {
+	 if (!current || !target.equals(current.document)) {
+	    print("no current object.  creating new object");
+	    current = aQueryCreate(target);
+	 }
+      } else {
+	 if (!current || !current.document.equals(Application.activeDocument)) {
+	    current = aQueryCreate(Application.activeDocument);
+	 }
+      }
+      return current(target, context);
+   };
+
+})();
+
+var $$, _$, aQueryCreate;
+
+aQueryCreate = $$ = _$ = function(document) {
 
    // If no document is passed in, then use the active document
    document = document || Application.activeDocument;
@@ -94,8 +122,19 @@ var _$ = function(document) {
       init: function(selector, context) {
 	 var match, elem, ret;
 
+	 // Keep a reference to the current document
+	 //this.document = document;
+
 	 // Handle $(""), $(null), or $(undefined)
 	 if ( !selector ) {
+	    return this;
+	 }
+
+	 // Handle $(Document)
+	 if ( selector.nodeType && selector.nodeType === 9 ) {
+	    this.context = this[0] = selector;
+	    this.length = 1;
+	    this.document = selector;
 	    return this;
 	 }
 
@@ -103,6 +142,7 @@ var _$ = function(document) {
 	 if ( selector.nodeType ) {
 	    this.context = this[0] = selector;
 	    this.length = 1;
+	    this.document = selector.ownerDocument;
 	    return this;
 	 }
 
@@ -186,6 +226,7 @@ var _$ = function(document) {
 	 if (selector.selector !== undefined) {
 	    this.selector = selector.selector;
 	    this.context = selector.context;
+	    this.document = selector.document;
 	 }
 
 	 return aQuery.makeArray(selector, this);
@@ -194,6 +235,9 @@ var _$ = function(document) {
 
       // Start with an empty selector
       selector: "",
+
+      // Start by keeping a reference to the current document
+      document: document,
 
       // Current version of aQuery being used
       aquery: "0.3",
@@ -308,6 +352,10 @@ var _$ = function(document) {
 
       }
    };
+
+   // Store context document
+   // TODO: this may not be necessary
+   aQuery.document = document;
 
    // Give the init function the aQuery prototype for later instantiation
    aQuery.fn.init.prototype = aQuery.fn;
@@ -950,6 +998,7 @@ var _$ = function(document) {
 	children: function( elem ) {
 	   return aQuery.sibling( elem.firstChild );
 	},
+	// TODO: The iframe / window stuff should be removed
 	contents: function( elem ) {
 	   return aQuery.nodeName( elem, "iframe" ) ?
 	      elem.contentDocument || elem.contentWindow.document :
@@ -1236,7 +1285,7 @@ var _$ = function(document) {
 	       for (var child = elem.firstChild; child != null; child = child.nextSibling) {
 		  elem.removeChild(child);
 	       }
-	       elem.appendChild(document.createTextNode(text));
+	       elem.appendChild(this.document.createTextNode(text));
 	    }
 	    return this;
 	 } else {
@@ -1401,7 +1450,7 @@ var _$ = function(document) {
       xml: function( value ) {
 	 if ( value === undefined ) {
 	    if (this[0] && this[0].nodeType === 1) {
-	       var range = document.createRange();
+	       var range = this.document.createRange();
 	       range.selectNodeContents(this[0]);
 	       return "" + range.toMarkupString();
 	    }
