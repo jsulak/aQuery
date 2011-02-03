@@ -185,12 +185,16 @@ aQueryCreate = $$ = _$ = function(document) {
 
 	       // HANDLE: $("#id")
 	       } else {
-		     elem = document.getElementById( match[2] );
-		     this.context = document;
-		     this.selector = selector;
-		     this.length = 1;
+		  elem = document.getElementById( match[2] );
+
+                  if ( elem ) {
+                     this.length = 1;
 		     this[0] = elem;
-		     return this;
+                  }
+
+                  this.context = document;
+	          this.selector = selector;
+	          return this;
 	       }
 
 	    // HANDLE: $("TAG")
@@ -202,11 +206,20 @@ aQueryCreate = $$ = _$ = function(document) {
 
 	    // HANDLE: $("OID")
 	    } else if ( isoid.test( selector ) ) {
-	       elem = Acl.getDOMOID(selector);
+	       elem = Acl.getDOMOID( selector );
+
+               if ( elem ) {
+                  this.document = elem.ownerDocument;
+                  this.context = this.document;
+                  print("aclid: " + this.document.aclId);
+                  this.length = 1;
+                  this[0] = elem;
+               } else {
+                  this.context = document;
+                  this.length = 0;
+               }
+
 	       this.selector = selector;
-	       this.context = document;
-	       this.length = 1;
-	       this[0] = elem;
 	       return this;
 
 	    // HANDLE: $("XPATH")
@@ -1610,14 +1623,16 @@ aQueryCreate = $$ = _$ = function(document) {
       }
 
       // Handle ID matching: #ID
-      if (selector.match(/^#/)) {
-	 // TODO: If the context is an element, make sure that it is actually a descendant
+      if ( selector.match(/^#/) ) {
 	 var id = selector.substr(1);
 	 results.push(document.getElementById(id));
       }
 
       else if ( isoid.test( selector ) ) {
-	 results.push(Acl.getDOMOID(selector));
+         var elem = Acl.getDOMOID(selector);
+         if ( elem && elem.ownerDocument.equals(context.ownerDocument || context) ) {
+            results.push(Acl.getDOMOID(selector));
+         }
       }
 
       else if ( !rnonword.test( selector ) ) {
