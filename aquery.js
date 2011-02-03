@@ -84,17 +84,16 @@ aQueryCreate = $$ = _$ = function(document) {
    // Match a standalone tag
    rsingleTag = /^<(\w+)\s*\/?>(?:<\/\1>)?$/,
 
-
    // Test for full XPath
    fullXPath = /^\//,
 
    // Test for OID
    isoid = /^\(\d+,\d+,\d+\)$/;
 
+
    // ================================
    // Private functions
    // ================================
-
 
    // Utility function for retreiving the text value of an array of DOM nodes
    // From Sizzle.getText()
@@ -127,9 +126,6 @@ aQueryCreate = $$ = _$ = function(document) {
       init: function(selector, context) {
 	 var match, elem, ret, doc;
 
-	 // Keep a reference to the current document
-	 //this.document = document;
-
 	 // Handle $(""), $(null), or $(undefined)
 	 if ( !selector ) {
 	    return this;
@@ -158,10 +154,9 @@ aQueryCreate = $$ = _$ = function(document) {
 	    match = quickExpr.exec( selector );
 
 	    // Verify a match, and that no context was specified for #id
-	    // TODO: Removed context test
 	    if ( match && (match[1] || !context) ) {
 
-	       // HANDLE: $(html) -> $(array)
+	       // HANDLE: $(xml) -> $(array)
 	       if ( match [1] ) {
                   doc = (context ? context.ownerDocument || context : document);
 
@@ -180,9 +175,7 @@ aQueryCreate = $$ = _$ = function(document) {
 
 		  } else {
 		     ret = aQuery.buildFragment( [ match[1] ], [ doc ] );
-		     // TODO: Removed caching logic
 		     selector = (ret.cacheable ? ret.fragment.cloneNode(true) : ret.fragment).childNodes;
-
 		  }
 
 		  return aQuery.merge( this, selector );
@@ -248,7 +241,6 @@ aQueryCreate = $$ = _$ = function(document) {
 
             // HANDLE: $(expr, $(...))
             } else if ( !context || context.aquery ) {
-               // TODO: Add rootaQuery
                return (context || rootaQuery).find( selector );
 
             // HANDLE: $(expr, context)
@@ -265,7 +257,6 @@ aQueryCreate = $$ = _$ = function(document) {
 	 }
 
 	 return aQuery.makeArray(selector, this);
-
       },
 
       // Start with an empty selector
@@ -368,8 +359,6 @@ aQueryCreate = $$ = _$ = function(document) {
       push: push,
       sort: [].sort,
       splice: [].splice,
-
-
 
       bind: function(type, data, fn) {
 
@@ -607,7 +596,6 @@ aQueryCreate = $$ = _$ = function(document) {
 
 	 return -1;
       },
-
 
       merge: function ( first, second ) {
 	 var i = first.length,
@@ -1192,14 +1180,14 @@ aQueryCreate = $$ = _$ = function(document) {
           doc = (nodes && nodes[0] ? nodes[0].ownerDocument || nodes[0] : document);
 
       if (args.length === 1 && typeof args[0] === "string" && args[0].length < 512 && doc == document) {
-	 cacheable = true;
+         cacheable = true;
       }
 
       cacheresults = aQuery.fragments[ args[0] ];
       if ( cacheresults ) {
-	 if ( cacheresults !== 1 ) {
-	    fragment = cacheresults;
-	 }
+         if ( cacheresults !== 1 ) {
+            fragment = cacheresults;
+         }
       }
 
       if ( !fragment ) {
@@ -1208,7 +1196,7 @@ aQueryCreate = $$ = _$ = function(document) {
       }
 
       if ( cacheable ) {
-	 aQuery.fragments[ args[0] ] = cacheresults ? fragment.cloneNode(true) : 1;
+         aQuery.fragments[ args[0] ] = cacheresults ? fragment.cloneNode(true) : 1;
       }
 
       return { fragment: fragment, cacheable: cacheable };
@@ -1271,7 +1259,7 @@ aQueryCreate = $$ = _$ = function(document) {
 	    if ( typeof elem === "string" && !rhtml.test( elem ) ) {
 	       elem = context.createTextNode( elem );
 	    } else if ( typeof elem === "string" ) {
-	       var insertRange = context.createRange();
+               var insertRange = context.createRange();
 	       insertRange.setStart(fragment, 0);
 	       insertRange.setEnd(fragment, 0);
 	       try {
