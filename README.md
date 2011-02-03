@@ -43,6 +43,10 @@ To select an element with a given id, you can use the `#id` syntax.  For example
 
     $("#topic-1")
  
+Or you can use an oid:
+
+    $("(259,1,44)")
+ 
 To create a new element, you can pass the aQuery constructor a markup string.  For example:
 
     $("<section id='newsect'><title>New Section!</title><p/></section>")
