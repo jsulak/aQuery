@@ -2,11 +2,11 @@
 
 _jQuery for the Arbortext Object Model (AOM)_
 
-aQuery is the new, better way to manipulate XML and XUI dialogs in Arbortext Editor.  It's a port of the popular [jQuery](http://www.jquery.com) Javascript library. 
+aQuery is the new, better way to work with XML and XUI dialogs in Arbortext Editor.  It makes your code shorter, easier to read, and more fun to write.  It's a port of the popular [jQuery](http://www.jquery.com) library. 
 
-The current version of aQuery is 0.7 alpha.  You can download it here.
+The current version of aQuery is 0.7 alpha. 
 
-The documentation on how to use aQuery is the [jQuery documentation](http://docs.jquery.com/Main_Page) itself.  Most methods that make sense to use in an XML-only environment have been ported; a full list is below under API.  
+The best documentation on how to use aQuery is the [jQuery documentation](http://docs.jquery.com/Main_Page) itself.  Most methods that make sense to use in an XML-only environment have been ported; a full list is below under API.  
 
 
 ## How To Use ##
