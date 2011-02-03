@@ -2,16 +2,16 @@
 
 _jQuery for the Arbortext Object Model (AOM)_
 
-aQuery is the new, better way to manipulate XML in Arbortext Editor.  It can be used with any document or XUI dialog.  It's a port of the popular [jQuery](http://www.jquery.com) Javascript library. 
+aQuery is the new, better way to manipulate XML and XUI dialogs in Arbortext Editor.  It's a port of the popular [jQuery](http://www.jquery.com) Javascript library. 
 
 The current version of aQuery is 0.7 alpha.  You can download it here.
 
-The documentation on how to use aQuery is the [jQuery documentation](http://docs.jquery.com/Main_Page) itself.  Most methods that make sense to use in an XML-only environment have been ported; a full list is below under API.
+The documentation on how to use aQuery is the [jQuery documentation](http://docs.jquery.com/Main_Page) itself.  Most methods that make sense to use in an XML-only environment have been ported; a full list is below under API.  
 
 
 ## How To Use ##
 
-Add `aquery.js` and `aquery_utils.acl` to your `APTCUSTOM/scripts/` folder.  Source them both on Arbortext startup.  
+Add `aquery.js` and `aquery_utils.acl` to your `APTCUSTOM/scripts/` folder.  Source them both on Arbortext start up.  
 
 To try it out, open a document and type the following on the Javascript command line (to activate the Javascript command line, place your cursor in the command line and press F5).  For example, to select all titles in the active document:
 
@@ -43,7 +43,7 @@ To select an element with a given id, you can use the `#id` syntax.  For example
 
     $("#topic-1")
  
-Or you can use an oid:
+Or you can use an OID:
 
     $("(259,1,44)")
  
@@ -59,7 +59,7 @@ returns an aQuery object containing a new `<section />` element.  You can also p
 
 In addition to the default jQuery methods, aQuery supports the `.oid()` method, which returns the OID of the first element in the set of matched elements.
 
-This is a summary of the jQuery API methods available in aQuery:
+Virtually all traversing- and manipulation-related methods have been ported from jQuery.  Event support is still weak, although `bind()` is provided.  This is a summary of the jQuery API methods available in aQuery:
 
 
 ### Events ###
