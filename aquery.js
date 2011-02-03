@@ -56,6 +56,9 @@ aQueryCreate = $$ = _$ = function(document) {
       return new aQuery.fn.init(selector, context);
    },
 
+   // A central reference to the root aQuery(document)
+   rootaQuery,
+
    // Save a reference to some core methods
    hasOwn = Object.prototype.hasOwnProperty,
    push = Array.prototype.push,
@@ -64,7 +67,7 @@ aQueryCreate = $$ = _$ = function(document) {
    // [[Class]] -> type pairs
    class2type = {},
 
-   // A simple way to check for HTML strings or ID strings
+   // A simple way to check for XML strings or ID strings
    // (both of which we optimize for)
    quickExpr = /^(?:[^<]*(<[\w\W]+>)[^>]*$|#([\w\-]+)$)/,
 
@@ -122,7 +125,7 @@ aQueryCreate = $$ = _$ = function(document) {
    aQuery.fn = aQuery.prototype = {
 
       init: function(selector, context) {
-	 var match, elem, ret;
+	 var match, elem, ret, doc;
 
 	 // Keep a reference to the current document
 	 //this.document = document;
@@ -151,15 +154,16 @@ aQueryCreate = $$ = _$ = function(document) {
 	 // Handle strings
 	 if ( typeof selector === "string" ) {
 
-	    // Are we dealing with HTML string or an ID?
+	    // Are we dealing with XML string or an ID?
 	    match = quickExpr.exec( selector );
 
 	    // Verify a match, and that no context was specified for #id
 	    // TODO: Removed context test
-	    if ( match ) {
+	    if ( match && (match[1] || !context) ) {
 
 	       // HANDLE: $(html) -> $(array)
 	       if ( match [1] ) {
+                  doc = (context ? context.ownerDocument || context : document);
 
 		  // If a single string is passed in and it's a single tag
 		  // just do a createElement and skip the rest
@@ -171,13 +175,13 @@ aQueryCreate = $$ = _$ = function(document) {
 			aQuery.fn.attr.call( selector, context, true );
 
 		     } else {
-			selector = [ document.createElement( ret[1] ) ];
+			selector = [ doc.createElement( ret[1] ) ];
 	             }
 
 		  } else {
-		     ret = aQuery.buildFragment( [ match[1] ], [ document ] );
+		     ret = aQuery.buildFragment( [ match[1] ], [ doc ] );
 		     // TODO: Removed caching logic
-		     selector = ret.fragment.childNodes;
+		     selector = (ret.cacheable ? ret.fragment.cloneNode(true) : ret.fragment).childNodes;
 
 		  }
 
@@ -198,20 +202,19 @@ aQueryCreate = $$ = _$ = function(document) {
 	       }
 
 	    // HANDLE: $("TAG")
-	    } else if ( !rnonword.test( selector ) ) {
+	    } else if ( !context && !rnonword.test( selector ) ) {
 	       this.selector = selector;
 	       this.context = document;
 	       selector = document.getElementsByTagName(selector);
 	       return aQuery.merge(this, selector);
 
 	    // HANDLE: $("OID")
-	    } else if ( isoid.test( selector ) ) {
+	    } else if ( !context && isoid.test( selector ) ) {
 	       elem = Acl.getDOMOID( selector );
 
                if ( elem ) {
                   this.document = elem.ownerDocument;
                   this.context = this.document;
-                  print("aclid: " + this.document.aclId);
                   this.length = 1;
                   this[0] = elem;
                } else {
@@ -223,7 +226,7 @@ aQueryCreate = $$ = _$ = function(document) {
 	       return this;
 
 	    // HANDLE: $("XPATH")
-	    } else if (Acl.func("xpath_valid", selector)) {
+	    } else if ( !context && Acl.func("xpath_valid", selector)) {
 	       // TODO: Allow this to work with a context
 	       var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
 					     fullXPath.test ( selector ) ?
@@ -242,9 +245,17 @@ aQueryCreate = $$ = _$ = function(document) {
 	       var result = aQuery.map(oids, function(e) { return Acl.getDOMOID(e); } );
 
 	       return aQuery.merge(this, result);
-	    }
 
+            // HANDLE: $(expr, $(...))
+            } else if ( !context || context.aquery ) {
+               // TODO: Add rootaQuery
+               return (context || rootaQuery).find( selector );
 
+            // HANDLE: $(expr, context)
+            // (which is just equivalent to $(context).find(expr)
+            } else {
+               return aQuery( context ).find( selector );
+            }
 	 }
 
 	 if (selector.selector !== undefined) {
@@ -376,6 +387,9 @@ aQueryCreate = $$ = _$ = function(document) {
 
       }
    };
+
+   // All aQuery objects should point back to these
+   rootaQuery = aQuery(document);
 
    // Store context document
    // TODO: this may not be necessary
@@ -1482,7 +1496,6 @@ aQueryCreate = $$ = _$ = function(document) {
 	       return null;
 	    }
 
-	 // See if we can take a shortcut and just use innerHTML
          // TODO: removed caching & wrapmap logic
 	 // TODO: Might be able to optimize and insert directly instead of calling append
 	 } else if ( typeof value === "string") {
