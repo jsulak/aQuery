@@ -747,8 +747,15 @@ aQueryCreate = $$ = _$ = function(document) {
 	rparentsprev = /^(?:parents|prevUntil|prevAll)/,
 	// Note: This RegExp should be improved, or likely pulled from Sizzle
 	rmultiselector = /,/,
-	isSimple = /^.[^:#\[\.,]*$/;
 	//POS = aQuery.expr.match.POS;
+
+        // methods guaranteed to produce a unique set when starting from a unique set
+	guaranteedUnique = {
+	   children: true,
+	   contents: true,
+	   next: true,
+	   prev: true
+	};
 
    var sortOrder = function( a, b ) {
       var al, bl,
@@ -1039,10 +1046,10 @@ aQueryCreate = $$ = _$ = function(document) {
 	   }
 
 	   if ( selector && typeof selector === "string" ) {
-	    	ret = aQuery.filter( selector, ret );
+	      ret = aQuery.filter( selector, ret );
 	   }
 
-	   ret = this.length > 1 ? aQuery.unique( ret ) : ret;
+	   ret = this.length > 1 && !guaranteedUnique[ name ] ? aQuery.unique( ret ) : ret;
 
 	   if ( (this.length > 1 || rmultiselector.test( selector )) && rparentsprev.test( name ) ) {
 	      ret = ret.reverse();
