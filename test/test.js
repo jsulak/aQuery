@@ -132,11 +132,11 @@ var aQueryTests = function() {
       	      equal($doc("p").length, 61);
       	      equal($doc("/topic/title").text(), "The Waste Land");
       	      equal($doc("sdfsdf").length, 0, "No hits in XPath, then zero length");
-	      equal($doc("#topic-1").length, 1, "topic id found");
-	      equal("" + $doc("#topic-1")[0].tagName, "topic", "topic id found");
+              equal($doc("#topic-1").length, 1, "topic id found");
+              equal("" + $doc("#topic-1")[0].tagName, "topic", "topic id found");
 
-	      var oid = $doc("#topic-1").oid();
-	      equal($doc(oid).attr("id"), "topic-1", "get element by OID");
+              var oid = $doc("#topic-1").oid();
+              equal($doc(oid).attr("id"), "topic-1", "get element by OID");
 
       	   });
 
@@ -773,8 +773,8 @@ var aQueryTests = function() {
       	      equals($doc("data").find("topic/title").length, 0, "Find - xpath, none expected");
       	      equals($doc("/topic").find("#notes-on-the-wasteland").length, 1, "Find - id");
 
-	      var oid = $doc("#notes-on-the-wasteland").oid();
-	      equals($doc(oid).attr("id"), "notes-on-the-wasteland", "Find - oid");
+              var oid = $doc("#notes-on-the-wasteland").oid();
+              equals($doc(oid).attr("id"), "notes-on-the-wasteland", "Find - oid");
 
       	   });
 
@@ -1093,6 +1093,21 @@ var aQueryTests = function() {
 
       	      p.text("T. S. Eliot");
       	   });
+
+      test("context", function() {
+              equals($doc("data", $doc("prolog")).length, 9, "constructor with context");
+              equals($doc("data", $doc("section")).length, 0, "constructor with context");
+
+              var section = $doc("section")[0];
+              equals($doc("data", section).length, 0, "constructor with DOM context");
+              equals($doc("title", section).length, 1, "constructor with DOM context");
+
+              equals($doc("topic").add("title", $("section")).length, 11, "add with context");
+
+              equals($doc("title").closest("section", $doc("prolog")[0]).length, 0, "closest with context");
+
+           });
+
 
       // Destroy test environment
       document.close();
