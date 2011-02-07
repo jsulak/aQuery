@@ -10,11 +10,10 @@
 var aQueryTests = function() {
 
 
-   function Setup() {
-      Acl.execute("source qunit.js");
-
-      // TODO: Update this path
-      Acl.execute("source b:/workspace/aquery/aquery.js");
+   function Setup(aQueryDir) {
+      Acl.execute("source " + aQueryDir + "/test/qunit.js");
+      Acl.execute("source " + aQueryDir + "/aquery.js");
+      Acl.execute("source " + aQueryDir + "/aquery_utils.acl");
 
       QUnitSetup();
    }
@@ -54,9 +53,9 @@ var aQueryTests = function() {
 
 
 
-   function ExecuteTests(testdir) {
+   function ExecuteTests(aQueryDir) {
       // Setup test environment
-      var document = Application.openDocument(testdir + "\\ts_eliot_wasteland.xml");
+      var document = Application.openDocument(aQueryDir + "/test/ts_eliot_wasteland.xml");
       var $doc = $$(document);
 
       print("");
@@ -1115,9 +1114,9 @@ var aQueryTests = function() {
 
 
    return {
-      Go: function(testdir) {
-	 Setup();
-	 ExecuteTests(testdir);
+      Go: function(aQueryDir) {
+	 Setup(aQueryDir);
+	 ExecuteTests(aQueryDir);
       }
    };
 
