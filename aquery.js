@@ -44,9 +44,9 @@ aQuery = $ = (function() {
 
 })();
 
-var $$, _$, aQueryCreate;
+var $$, aQueryCreate;
 
-aQueryCreate = $$ = _$ = function(document) {
+aQueryCreate = $$ = function(document) {
 
    // If no document is passed in, then use the active document
    document = document || Application.activeDocument;
