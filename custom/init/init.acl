@@ -1,0 +1,22 @@
+
+
+function showXUI(filename) {
+  local xuidoc = doc_open(dirname(caller_file(0)) . "../dialogs/" . filename);
+  local win = window_create("xui", 0x10, xuidoc);
+  window_show(win, 1);
+  return win;
+}
+
+function example_menu(window, filename) {
+  if (menu_exists("Tools")) {
+    menu_add -menu "Tools" "aQuery";
+    menu_add ".aQuery." "XPath Explorer" -cmd { showXUI("xpathexplorer.xml") };
+  }
+}
+
+add_hook("menuloadhook", "example_menu");
+
+
+
+
+    

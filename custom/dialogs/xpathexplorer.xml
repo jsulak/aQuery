@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Arbortext, Inc., 1988-2008, v.4002-->
+<!DOCTYPE window PUBLIC "-//Arbortext//DTD XUI XML 1.1//EN" "xui.dtd">
+<window focus="contextroot" height="400" modal="false" orient="vertical"
+	title="XPath Explorer" width="300">
+  <script type="application/x-javascript" ev:event="WindowLoad">
+    <!-- The XPath Explorer is based off of Clay Helberg's ACL debugging collection. -->
+    var dialog = Application.event.target;
+    var document = dialog.dialogView.document;
+    explorerHelper(document);
+  </script>
+  <label label="Enter XPath expression"/>
+  <textbox>
+    <value id="xpath" />
+  </textbox>
+  <button id="gobutton" label="Find" type="accept" />
+  <label id="nhits" label="No search performed"/>
+  <listbox id="hits" />
+</window>
+<?Pub *0000002247 0?>
