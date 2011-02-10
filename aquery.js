@@ -266,7 +266,7 @@ aQueryCreate = $$ = function(document) {
       document: document,
 
       // Current version of aQuery being used
-      aquery: "0.3",
+      aquery: "0.7",
 
       // The default length of an aQuery object is 0
       length: 0,
