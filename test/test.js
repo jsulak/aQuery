@@ -1107,6 +1107,15 @@ var aQueryTests = function() {
 
            });
 
+      test("selectors with commas", function() {
+              equals($doc("data, topic").length, 11, "element selectors with comma");
+              equals($doc("title[contains(., 'Burial')]").length, 2, "single selector with non-chunking comma");
+              equals($doc("topic").find("title[contains(., 'Burial')]").length, 2, "find with non-chunking comma");
+              equals($doc("title[contains(., 'Burial')] , lines[contains(., 'April')]").length, 3, "two xpath terms seperated with a comma");
+              equals($doc("data | topic").length, 11, "Xpath seperated by pipe");
+
+           });
+
 
       // Destroy test environment
       document.close();

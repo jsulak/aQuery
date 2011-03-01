@@ -56,9 +56,6 @@ aQueryCreate = $$ = function(document) {
       return new aQuery.fn.init(selector, context);
    },
 
-   // A central reference to the root aQuery(document)
-   rootaQuery,
-
    // Save a reference to some core methods
    hasOwn = Object.prototype.hasOwnProperty,
    push = Array.prototype.push,
@@ -94,6 +91,52 @@ aQueryCreate = $$ = function(document) {
    // ================================
    // Private functions
    // ================================
+
+   // Used to split a compound selector into multiple parts.
+   // Called both from aQuery constructor and from Simmer
+   function tokenizeSelector(selector) {
+
+      var parts = [];
+      var chunker = /\(|\)|\||,|\[|\]/g;
+      var m, seperator, bracketStack = 0, parenStack = 0, remainder = "";
+      var soFar = selector;
+
+      do {
+         m = chunker.exec( soFar );
+         if ( m ) {
+            seperator = m[0];
+
+            switch(seperator) {
+            case "[":
+               bracketStack++;
+               break;
+            case "]":
+               bracketStack--;
+               break;
+            case "(":
+               parenStack++;
+               break;
+            case ")":
+               parenStack--;
+               break;
+            case "|":
+            case ",":
+               if (bracketStack == 0 && parenStack == 0) {
+                  parts.push(remainder + soFar.substring(0, m.index));
+                  soFar = (soFar.substring(m.index + 1));
+                  remainder = "";
+               }
+            }
+         }
+         else {
+            parts.push(soFar);
+         }
+
+      } while ( m )
+
+      return parts;
+   }
+
 
    // Utility function for retreiving the text value of an array of DOM nodes
    // From Sizzle.getText()
@@ -219,7 +262,9 @@ aQueryCreate = $$ = function(document) {
 	       return this;
 
 	    // HANDLE: $("XPATH")
-	    } else if ( !context && Acl.func("xpath_valid", selector)) {
+            // We don't want a context with a pipe, since those aren't handled correctly
+            // TODO: Later optimize to full-xpathize pipe expressions properly, since that would be faster.
+	    } else if ( !context && selector.indexOf("|") == -1 && Acl.func("xpath_valid", selector) == 1) {
 	       // TODO: Allow this to work with a context
 	       var oidNodesString = Acl.func("aquery_utils::get_doc_xpath_oids",
 					     fullXPath.test ( selector ) ?
@@ -241,7 +286,7 @@ aQueryCreate = $$ = function(document) {
 
             // HANDLE: $(expr, $(...))
             } else if ( !context || context.aquery ) {
-               return (context || rootaQuery).find( selector );
+               return (context || aQuery(document)).find( selector );
 
             // HANDLE: $(expr, context)
             // (which is just equivalent to $(context).find(expr)
@@ -376,9 +421,6 @@ aQueryCreate = $$ = function(document) {
 
       }
    };
-
-   // All aQuery objects should point back to these
-   rootaQuery = aQuery(document);
 
    // Store context document
    // TODO: this may not be necessary
@@ -1631,7 +1673,7 @@ aQueryCreate = $$ = function(document) {
       }
 
       // Handle ID matching: #ID
-      if ( selector.match(/^#/) ) {
+      else if ( selector.match(/^#/) ) {
 	 var id = selector.substr(1);
 	 results.push(document.getElementById(id));
       }
@@ -1648,7 +1690,8 @@ aQueryCreate = $$ = function(document) {
       }
 
       // If it is a valid xpath expression, then do that
-      else if (Acl.func("xpath_valid", selector)) {
+      // Any XPath expression with a pipe needs to be chunked
+      else if (selector.indexOf("|") == -1 && Acl.func("xpath_valid", selector) == 1) {
          var oidNodesString;
 
          // If we have a context element, then use it
@@ -1673,6 +1716,20 @@ aQueryCreate = $$ = function(document) {
 
 	 results = aQuery.merge(results, aQuery.map(oids, function(e) { return Acl.getDOMOID(e); } ));
       }
+
+      else {
+         var parts = tokenizeSelector(selector);
+
+         if (parts.length > 1) {
+            //         print(parts);
+            // print("looping");
+            for (var i = 0; i < parts.length; i++) {
+               results = aQuery.merge(results, Simmer(parts[i]));
+            }
+            results = results.length > 1 ? aQuery.unique(results) : results;
+         }
+      }
+
 
       // If we've been passed a seed, then filter to only include items that are part of the original seed
       if (seed && results.length > 0) {
