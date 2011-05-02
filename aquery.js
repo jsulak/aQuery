@@ -18,38 +18,15 @@
 // Source the aquery utils
 //Acl.execute("source aquery_utils.acl");
 
-var aQuery, $;
+var aQuery, $, $$, aQueryCreate;
 
-aQuery = $ = (function() {
-
-   var current = null;
-
-   return function(target, context) {
-
-      // If the target is a document, then call constructor.  Else create
-      // new aquery object based on the activeDocument and call that instead.
-      // One aQuery object is cached to speed up a sequence of queries to the
-      // same document.
-      if (target.nodeType && target.nodeType === 9) {
-	 if (!current || !target.equals(current.document)) {
-	    current = aQueryCreate(target);
-	 }
-      } else {
-	 if (!current || !current.document.equals(Application.activeDocument)) {
-	    current = aQueryCreate(Application.activeDocument);
-	 }
-      }
-      return current(target, context);
-   };
-
-})();
-
-var $$, aQueryCreate;
-
-aQueryCreate = $$ = function(document) {
+aQueryCreate = $$ = function(passedDoc) {
 
    // If no document is passed in, then use the active document
-   document = document || Application.activeDocument;
+   var document = passedDoc || Application.activeDocument;
+
+   // This flag tells the init function to grab the active Document every time
+   var useActiveDocument = !!(passedDoc == null);
 
    var aQuery = function(selector, context) {
       // The aQuery object is actually just the init constructor "enhanced."
@@ -168,6 +145,11 @@ aQueryCreate = $$ = function(document) {
 
       init: function(selector, context) {
 	 var match, elem, ret, doc;
+
+         // Determine which document to use
+         if (useActiveDocument) {
+            document = Application.activeDocument;
+         }
 
 	 // Handle $(""), $(null), or $(undefined)
 	 if ( !selector ) {
@@ -558,7 +540,7 @@ aQueryCreate = $$ = function(document) {
 
       // MISSING: globalEval, nodeName
       nodeName: function( elem, name ) {
-	 return elem.nodeName && elem.nodeName.toUpperCase() === name.toUpperCase();
+	 return elem.nodeName && elem.nodeName.toUpperCase() == name.toUpperCase();
       },
 
       // args is for internal usage only
@@ -1153,17 +1135,37 @@ aQueryCreate = $$ = function(document) {
 
    aQuery.fn.extend({
       attr: function ( name, value ) {
- 	 return aQuery.access( this, name, value, true, aQuery.attr );
+         return aQuery.access( this, name, value, true, aQuery.attr );
       },
 
       removeAttr: function( name, fn ) {
-	 return this.each(function(){
+         return this.each(function(){
 	    aQuery.attr( this, name, "" );
-	       if ( this.nodeType === 1 ) {
-		  this.removeAttribute( name );
-	       }
-	    });
+	    if ( this.nodeType === 1 ) {
+	       this.removeAttribute( name );
+	    }
+         });
+      },
+
+
+      val: function( value ) {
+         // If there are no arguments, then get
+         if ( !arguments.length ) {
+            print("has no argument");
+            var elem = this[0];
+            if ( elem ) {
+               print("has elem");
+               print(elem.nodeName);
+               print(aQuery.nodeName(elem, "checkbox"));
+               // Go through each XUI element and handle specially if neccessary
+               if ( aQuery.nodeName( elem, "checkbox" ) ) {
+                  print("checkbox");
+                  return "" + elem.getAttribute("checked");
+               }
+            }
+         }
       }
+
    });
 
    aQuery.extend({
@@ -1763,7 +1765,7 @@ aQueryCreate = $$ = function(document) {
    return aQuery;
 };
 
-
+$ = aQuery = aQueryCreate();
 
 
 
