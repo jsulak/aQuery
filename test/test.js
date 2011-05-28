@@ -1122,10 +1122,97 @@ var aQueryTests = function() {
    }
 
 
+   function ExecuteXUITests(aQueryDir) {
+      var document = Application.openDocument(aQueryDir + "/test/dialog.xml");
+      var $doc = $$(document);
+
+      print("");
+      print("=========================");
+      print("    BEGIN XUI TESTS      ");
+      print("=========================");
+
+
+
+      test("GET value w/ val()", function() {
+         // Checkbox
+         equals($doc("#check1").val(), "false", "checkbox w/ false value");
+         equals($doc("#check2").val(), "true", "checkbox w/ true value");
+         equals($doc("checkbox").val(), "false", "return only first value for multiple selected checkboxes");
+
+         // Combobox
+         equals($doc("#combo").val(), "value", "combobox");
+
+         // Listbox
+         equals($doc("#list").val(), "value", "listbox");
+         deepEqual($doc("#multiplelist").val(), ["value", "value2"], "multiple listbox");
+
+         // Dropdown
+         equals($doc("#dropdown").val(), "value", "listdropdown");
+
+         // TODO: Radio (What to do here?)
+         equals($doc("#radiochecked").val(), true, "single radio (true)");
+         equals($doc("#radionotchecked").val(), false, "single radio (true)");
+
+         deepEqual($doc("#radiogroup").val(), "radiolabel1", "radiogroup");
+
+
+         // Textbox
+         equals($doc("#textbox").val(), "Hello", "textbox");
+      });
+
+      test("SET values w/ val()", function() {
+         // textbox
+         $doc("#textbox").val("Howdy");
+         equals($doc("#textbox").children("value").text(), "Howdy", "Set single textbox value");
+
+         $doc("textbox").val("Aloha");
+         equals($doc("#textbox").children("value").text(), "Aloha", "Set multiple textbox values (1)");
+         equals($doc("#textbox2").children("value").text(), "Aloha", "Set multiple textbox values (2)");
+
+         $doc("#textbox").val(function(index, value) { return value.toUpperCase(); });
+         equals($doc("#textbox").children("value").text(), "ALOHA", "Set single textbox value with function");
+
+         $doc("textbox").val(function(index, value) { return value.toLowerCase() + index;});
+         equals($doc("#textbox").children("value").text(), "aloha0", "Set multiple textbox values with function (1)");
+         equals($doc("#textbox2").children("value").text(), "aloha1", "Set multiple textbox values with function (2)");
+
+         // Set multiple-item listbox
+         $doc("#multiplelist").val(["value", "value2", "notvalue"]);
+         deepEqual($doc("#multiplelist").val(), ["value", "value2", "notvalue"], "Set multiple listbox items at once");
+
+         $doc("#multiplelist").val(["value"]);
+         deepEqual($doc("#multiplelist").val(), ["value"], "Set a single listbox item");
+
+
+         $doc("#radiogroup").val("radiolabel3");
+         equals($doc("#radiogroup").val(), "radiolabel3", "Set a single radio button with string");
+
+         // TODO: multiple radio / checkboxes
+         $doc("#radiogroup").val(["radiolabel2"]);
+         deepEqual($doc("#radiogroup").val(), "radiolabel2", "Set a single radiobutton with array");
+
+         $doc("radiogroup").val(["radiolabel1", "radiolabel5"]);
+         equals($doc("#radiogroup").val(), "radiolabel1", "Set multiple radios across groups (1)");
+         equals($doc("#radiogroup2").val(), "radiolabel5", "Set multiple radios across groups (2)");
+         equals($doc("#radionotchecked").val(), false, "Set multiple radios across groups (3)");
+
+         // Checkboxes
+         $doc("checkbox").val(["Test Checkbox 1"]);
+         equals($doc("#check1").val(), "true", "Set single checkbox with array");
+
+         $doc("checkbox").val(["Test Checkbox 1", "Test Checkbox 3"]);
+         equals($doc("#check3").val(), "true", "Set multiple checkboxes with array");
+      });
+
+
+      document.close();
+   }
+
    return {
       Go: function(aQueryDir) {
 	 Setup(aQueryDir);
-	 ExecuteTests(aQueryDir);
+	 // ExecuteTests(aQueryDir);
+         ExecuteXUITests(aQueryDir);
       }
    };
 

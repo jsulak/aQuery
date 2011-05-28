@@ -23,7 +23,7 @@ var aQuery, $, $$, aQueryCreate;
 aQueryCreate = $$ = function(passedDoc) {
 
    // If no document is passed in, then use the active document
-   var document = passedDoc || Application.activeDocument;
+   var document = passedDoc != null ? passedDoc : Application.activeDocument;
 
    // This flag tells the init function to grab the active Document every time
    var useActiveDocument = !!(passedDoc == null);
@@ -540,7 +540,7 @@ aQueryCreate = $$ = function(passedDoc) {
 
       // MISSING: globalEval, nodeName
       nodeName: function( elem, name ) {
-	 return elem.nodeName && elem.nodeName.toUpperCase() == name.toUpperCase();
+         return elem.nodeName && elem.nodeName.toUpperCase() == name.toUpperCase();
       },
 
       // args is for internal usage only
@@ -608,9 +608,9 @@ aQueryCreate = $$ = function(passedDoc) {
       },
 
       inArray: function( elem, array ) {
-	 //if ( !elem.nodeType && array.indexOf ) {
-	 //   return array.indexOf( elem );
-	 //}
+	 // if ( !elem.nodeType && array.indexOf ) {
+	 //    return array.indexOf( elem );
+	 // }
 
 	 for ( var i = 0, length = array.length; i < length; i++ ) {
 	    if ( ( array[ i ].nodeType && array[ i ].equals( elem ) ) || ( array[ i ] === elem ) ) {
@@ -1151,21 +1151,115 @@ aQueryCreate = $$ = function(passedDoc) {
       val: function( value ) {
          // If there are no arguments, then get
          if ( !arguments.length ) {
-            print("has no argument");
             var elem = this[0];
             if ( elem ) {
-               print("has elem");
-               print(elem.nodeName);
-               print(aQuery.nodeName(elem, "checkbox"));
                // Go through each XUI element and handle specially if neccessary
                if ( aQuery.nodeName( elem, "checkbox" ) ) {
-                  print("checkbox");
                   return "" + elem.getAttribute("checked");
                }
-            }
-         }
-      }
+               else if ( aQuery.nodeName(elem, "combobox") || aQuery.nodeName(elem, "listbox")
+                         || aQuery.nodeName(elem, "listdropdown") ) {
 
+                  if (elem.getAttribute("type") == "multiple") {
+                     var values = [];
+                     aQuery(elem).children("listitem").each(function(i) {
+                        var self = aQuery(this);
+                        if (self.attr("selected") == "true") {
+                           values.push(self.attr("label"));
+                        }
+                     });
+                     return values;
+                  }
+
+                  return "" + elem.getAttribute("value");
+               }
+               else if ( aQuery.nodeName(elem, "textbox") ) {
+                  return "" + aQuery(elem).children("value").text();
+               }
+               else if ( aQuery.nodeName(elem, "radio") ) {
+                  return !!(aQuery(elem).attr("checked") == "true");
+               }
+               else if ( aQuery.nodeName(elem, "radiogroup") ) {
+                  var values = [];
+                  aQuery(elem).children("radio").each(function() {
+                     var self = aQuery(this);
+                     if (self.val() == true) {
+                        values.push(self.attr("label"));
+                     }
+                  });
+                  // TODO: this can probably be done more elegantly w/o the array
+                  return values[0];
+               }
+            }
+
+            return undefined;
+         }
+
+         var isFunction = aQuery.isFunction(value);
+
+         return this.each(function(i) {
+            var self = aQuery(this), val = value;
+
+            if ( this.nodeType != 1 ) {
+               return;
+            }
+
+            if ( isFunction ) {
+               val = value.call(this, i, self.val());
+            }
+
+            // Treat null/undefined as ""; convert numbers to string
+            if ( val == null ) {
+               val = "";
+            } else if ( typeof val === "number" ) {
+               val += "";
+            } else if ( aQuery.isArray(val) ) {
+               val = aQuery.map(val, function (value) {
+                  return value == null ? "" : value + "";
+               });
+            }
+
+            // Set value
+            // TODO: Be able to use array of ids?
+            // TODO: Be able to set individual listitem?
+            var values;
+            if (aQuery.nodeName(this, "textbox")) {
+               self.children("value").text(val);
+            }
+            else if (aQuery.nodeName(this, "listbox") && self.attr("type") == "multiple") {
+               values = aQuery.makeArray(val);
+               aQuery("listitem", this).each(function() {
+                  var inArray = aQuery.inArray(aQuery(this).attr("label"), values) >= 0;
+                  this.setAttribute("selected", inArray);
+               });
+            }
+            else if (aQuery.nodeName(this, "radiogroup")) {
+               // TODO: This could probably be better
+               values = aQuery.makeArray(val);
+               aQuery("radio", this).each(function() {
+                  var inArray = aQuery.inArray(aQuery(this).attr("label"), values) >= 0;
+                  this.setAttribute("checked", inArray);
+               });
+            }
+            // TODO: What about setting multiple radios at once?
+            else if (aQuery.nodeName(this, "radio")) {
+               values = aQuery.makeArray(val);
+               this.setAttribute("checked", aQuery.inArray( aQuery(this).attr("label"), values ) >= 0);
+            }
+
+            else if (aQuery.nodeName(this, "checkbox")) {
+               values = aQuery.makeArray(val);
+               this.setAttribute("checked", aQuery.inArray( aQuery(this).attr("label"), values ) >= 0);
+            }
+
+         });
+
+
+      },
+
+      appData: function( value ) {
+
+      }
    });
 
    aQuery.extend({
@@ -1187,7 +1281,7 @@ aQueryCreate = $$ = function(passedDoc) {
 	    return undefined;
 	 }
 
-	 var attr = new String(elem.getAttribute( name ));
+	 var attr = "" + elem.getAttribute( name );
 
 	 // Non-existent attributes return null, we normalize to undefined
 	 return attr === null ? undefined : attr;
