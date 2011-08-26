@@ -86,6 +86,7 @@ Virtually all traversing- and manipulation-related methods have been ported from
 * [.remove()](http://api.jquery.com/remove/)
 * [.removeAttr()](http://api.jquery.com/removeAttr/)
 * [.replaceAll()](http://api.jquery.com/replaceAll/)
+* [.replaceWith()](http://api.jquery.com/replaceWith/)
 * [.text()](http://api.jquery.com/text/)
 * [.unwrap()](http://api.jquery.com/unwrap/)
 * TODO: val()
